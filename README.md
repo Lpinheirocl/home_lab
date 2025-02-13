@@ -8,6 +8,6 @@ Ao meu projeto de servidor pessoal, o objetivo e testar aplicações que me ajud
  - SSD 256GB
 
 # Aplicações 
- - Pi-hole [Link PI-Hole](./aplicacoes/pi-hole/)
+ - [PI-Hole](./aplicacoes/pi-hole/)
 
 # Aplicações Proprias
