@@ -7,3 +7,7 @@ Ao meu projeto de servidor pessoal, o objetivo e testar aplicações que me ajud
  - SD 64GB
  - SSD 256GB
 
+# Aplicações 
+ - Pi-hole [Link PI-Hole](./aplicacoes/pi-hole/)
+
+# Aplicações Proprias
