@@ -8,5 +8,7 @@ Para configuração do PI-Hole no servidor e bem simples, rode o script [ajuste_
 Apois isso subo o container do PI-Holee.
 Para acessar o PI-Hole basta informa o IP da maquina com "/admin".
 > Para alteração da senha do PI-Hole basta executar seguintes comandos
-> ```bash docker exec -it pihole sudo pihole -a -p```
+> ```bash 
+> docker exec -it pihole sudo pihole -a -p
+> ```
 
