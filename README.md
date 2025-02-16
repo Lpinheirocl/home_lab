@@ -9,5 +9,6 @@ Ao meu projeto de servidor pessoal, o objetivo e testar aplicações que me ajud
 
 # Aplicações 
  - [PI-Hole](./aplicacoes/pi-hole/)
+ - [Tailscale](./aplicacoes/tailscale/)
 
 # Aplicações Proprias
