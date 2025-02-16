@@ -1,14 +1,26 @@
-  services:
-    tailscale: 
-      container_name: tailscale 
-      hostname: tailscale-nas 
-      image: tailscale/tailscale:stable 
-      volumes: 
-        - ./tailscale:/var/lib # State data will be stored in this directory 
-        - /dev/net/tun:/dev/net/tun # Required for tailscale to work 
-      cap_add: # Required for tailscale to work 
-        - net_admin 
-        - sys_module 
-      command: tailscaled 
-      privileged: true 
-      restart: unless-stopped
+services:
+  ts-authkey-test:
+    image: tailscale/tailscale:latest
+    container_name: ts-authkey-test
+    hostname: authkey-test
+    environment:
+      - TS_AUTHKEY=tskey-auth-kp1VcCh5GY11CNTRL-6BSQ8zRorqhEXQNwjQ56rhGVjEaoNdoK
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - ${PWD}/ts-authkey-test/state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+    restart: unless-stopped
+    networks:
+      - pinheiro
+
+  nginx-authkey-test:
+    image: nginx
+    networks:
+      - pinheiro
+networks:
+  pinheiro:
+    external: true
