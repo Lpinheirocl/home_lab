@@ -1,4 +1,4 @@
-# home_lab
+# Home_Lab
 Bem vindo!!
 Ao meu projeto de servidor pessoal, o objetivo e testar aplicações que me ajude no dia a dia teste de novos softwares.
 
@@ -10,7 +10,7 @@ Ao meu projeto de servidor pessoal, o objetivo e testar aplicações que me ajud
 # Aplicações 
  - [PI-Hole](./aplicacoes/pi-hole/)
  - [Tailscale](./aplicacoes/tailscale/)
- - [K3S](./aplicacoes/k3s)
+ - [K3S](./infraestrutura/k3s)
 
 # Aplicações Proprias
 

@@ -1,4 +1,5 @@
-![alt text](image.png)# O que é K3s?
+![alt text](image.png)
+# O que é K3s?
 O K3s é uma distribuição leve do Kubernetes desenvolvida pela Rancher Labs. Ele é projetado para ser simples de instalar e gerenciar, mantendo a compatibilidade com o Kubernetes original. Ele usa containerd como runtime de containers, mas também suporta Docker.
 
 ## Instalação do K3s
