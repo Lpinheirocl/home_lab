@@ -10,7 +10,7 @@ Para acessar o PI-Hole basta informa o IP da maquina com "/admin".
 > [!TIP]
 > **Para alteração da senha do PI-Hole basta executar seguintes comandos**
 > ```bash 
-> docker exec -it pihole sudo pihole -a -p
+> docker exec -it pihole sudo pihole setpassword
 > ```
 
 Para que todo trafego de internet seja verificado e possa impedir o acesso de ADs, devemos configurar o nosso moldem para que aponte para nosso servidor.
