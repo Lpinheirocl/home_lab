@@ -3,7 +3,7 @@
 ![alt text](image-1.png)
 # PI-Hole
 O Pi-hole é um software de bloqueio de anúncios e um poderoso serviço de DNS local que ajuda a auditar os domínios consultados em sua rede.
-Caso vc utilize o pi-hole recomendo não qualquer serviço que utilize a porta 53(k3s), ja que a porta de comunicação do roteador ao pi-hole.
+Caso vc utilize o pi-hole recomendo, não usar qualquer serviço que utilize a porta 53(k3s), ja que a porta de comunicação do roteador ao pi-hole.
 
 # configurações
 
