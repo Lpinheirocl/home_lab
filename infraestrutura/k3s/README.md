@@ -9,16 +9,31 @@ Execute o seguinte comando no terminal
 curl -sfL https://get.k3s.io | sh -
 ```
 
+## Instale o K3s com o Docker como runtime
+```bash
+curl -sfL https://get.k3s.io | sh -s - --docker
+```
+## Instale o Docker
+https://docs.docker.com/engine/install/.
+
 ## O K3s gera um arquivo de configuração do Kubernetes em /etc/rancher/k3s/k3s.yaml. Para usar o kubectl
 ```bash
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 ```
 
-## Instale o Docker
-https://docs.docker.com/engine/install/.
-
-## Instale o K3s com o Docker como runtime
+## Para não utilizar o modo administrador para os comandos do kubectl seguimos o passo a passo
 ```bash
-curl -sfL https://get.k3s.io | sh -s - --docker
+sudo kubectl get nodes --kubeconfig /etc/rancher/k3s/k3s.yaml
 ```
+## Cria a pasta .Kube
+```bash
+mkdir -p ~/.kube
+```
+## torna os comandos kubectl para o usuario
+```bash
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo chown $(id -u):$(id -g) ~/.kube/config
+```
+
+
 
