@@ -1,3 +1,4 @@
+![alt text](image.png)
 # Dashboard Kubernetes
 O dashboard serve para verificar nosso pods e quantas replicações, uma visão mas macro da infraestrutura.
 
