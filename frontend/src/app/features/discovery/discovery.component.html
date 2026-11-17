@@ -1,0 +1,15 @@
+<section class="page">
+  <p class="eyebrow">Kubernetes</p><h2>Descoberta automática</h2>
+  <p class="muted">Aplicações encontradas no cluster aparecem aqui antes de serem adicionadas ao painel.</p>
+  <button type="button" (click)="discover()" [disabled]="loading()">{{ loading() ? 'Consultando...' : 'Executar descoberta' }}</button>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (!loading() && !error() && candidates().length === 0) { <p class="empty">Nenhuma aplicação descoberta. O cluster pode estar desativado ou não possuir Deployments.</p> }
+  <div class="list">
+    @for (candidate of candidates(); track candidate.namespace + '/' + candidate.name) {
+      <article class="card">
+        <div><h3>{{ candidate.display_name }}</h3><p>{{ candidate.namespace }} / {{ candidate.deployment_name }}</p><small>Pods prontos: {{ candidate.ready_replicas }}/{{ candidate.replicas }} · Services: {{ candidate.services.length }}</small></div>
+        <button type="button" (click)="confirm(candidate)" [disabled]="saving() === candidate.name">{{ saving() === candidate.name ? 'Salvando...' : 'Adicionar ao painel' }}</button>
+      </article>
+    }
+  </div>
+</section>

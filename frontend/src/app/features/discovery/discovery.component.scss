@@ -1,0 +1,11 @@
+.page { max-width: 1000px; }
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.muted { color: #64748b; }
+button { padding: 10px 14px; border: 0; border-radius: 7px; background: #2563eb; color: white; cursor: pointer; font-weight: 700; }
+button:disabled { opacity: .6; cursor: wait; }
+.list { display: grid; gap: 12px; margin-top: 24px; }
+.card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+.card h3, .card p { margin: 0 0 6px; }
+.card p, .card small { color: #64748b; }
+.error { padding: 12px; color: #991b1b; background: #fee2e2; border-radius: 8px; }
+.empty { margin-top: 24px; padding: 20px; color: #64748b; background: white; border-radius: 12px; }

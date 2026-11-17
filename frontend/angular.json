@@ -4,6 +4,11 @@
   "newProjectRoot": "projects",
   "projects": {"home-server-manager": {"projectType": "application", "root": "", "sourceRoot": "src", "prefix": "hsm", "architect": {
     "build": {"builder": "@angular-devkit/build-angular:application", "options": {"outputPath": "dist/home-server-manager", "index": "src/index.html", "browser": "src/main.ts", "polyfills": ["zone.js"], "tsConfig": "tsconfig.app.json", "assets": ["src/assets"], "styles": ["src/styles.scss"]}, "configurations": {"production": {"optimization": true, "sourceMap": false}, "development": {"optimization": false, "sourceMap": true}}, "defaultConfiguration": "production"},
-    "serve": {"builder": "@angular-devkit/build-angular:dev-server", "configurations": {"production": {"buildTarget": "home-server-manager:build:production"}, "development": {"buildTarget": "home-server-manager:build:development"}}, "defaultConfiguration": "development"}
-  }}}
+    "serve": {"builder": "@angular-devkit/build-angular:dev-server", "options": {"proxyConfig": "proxy.conf.json"}, "configurations": {"production": {"buildTarget": "home-server-manager:build:production"}, "development": {"buildTarget": "home-server-manager:build:development"}}, "defaultConfiguration": "development"}
+  }
+}
+},
+"cli": {
+"analytics": "458984fd-4c8e-49bb-847e-bb077917cfea"
+}
 }
