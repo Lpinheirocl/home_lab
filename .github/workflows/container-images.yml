@@ -2,7 +2,7 @@ name: Build and publish ARM64 images
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, develop]
     tags: ['v*']
   workflow_dispatch:
 
