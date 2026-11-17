@@ -6,7 +6,6 @@ resources:
   - rbac/service-account.yaml
   - rbac/read-cluster-role.yaml
   - rbac/read-cluster-role-binding.yaml
-  - postgres/secret.yaml
   - postgres/service.yaml
   - postgres/stateful-set.yaml
   - backend/config-map.yaml

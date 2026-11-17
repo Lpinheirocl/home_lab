@@ -3,7 +3,7 @@
 ## Antes de aplicar
 
 1. O workflow `.github/workflows/container-images.yml` publica as imagens no GHCR.
-2. Troque `CHANGE_ME_STRONG_PASSWORD` em [postgres/secret.yaml](./postgres/secret.yaml) por uma senha forte. O valor de `database-url` deve usar a mesma senha.
+2. Configure os Secrets do GitHub Actions: `RPI_HOST`, `RPI_USER`, `RPI_SSH_PORT`, `RPI_SSH_PRIVATE_KEY`, `HSM_POSTGRES_PASSWORD` e `HSM_DATABASE_URL`.
 3. Confirme que o Traefik está habilitado e que a StorageClass `local-path` existe.
 4. Confirme que o SSD está sendo usado pelo provisionador de volumes do K3s.
 
@@ -20,7 +20,7 @@ Se os pacotes GHCR forem privados, será necessário criar um `imagePullSecret` 
 
 ## Aplicação no cluster
 
-Os comandos abaixo ainda não foram executados:
+O workflow executará os comandos abaixo no Raspberry Pi:
 
 ```bash
 kubectl apply -k deployment/
