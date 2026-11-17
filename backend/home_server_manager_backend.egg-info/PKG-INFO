@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: home-server-manager-backend
 Version: 0.1.0
 Summary: API do Home Server Manager
-Requires-Python: >=3.11
+Requires-Python: >=3.10
 Requires-Dist: alembic<2.0,>=1.13
 Requires-Dist: asyncpg<1.0,>=0.29
 Requires-Dist: fastapi<1.0,>=0.115

@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: home-server-manager-read
+subjects:
+  - kind: ServiceAccount
+    name: home-server-manager-backend
+    namespace: home-server-manager
+roleRef:
+  kind: ClusterRole
+  name: home-server-manager-read
+  apiGroup: rbac.authorization.k8s.io

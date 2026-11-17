@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: home-server-manager-migration
+  namespace: home-server-manager
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migration
+          image: ghcr.io/lpinheirocl/home-server-manager-backend:arm64
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: HSM_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: home-server-manager-postgres
+                  key: database-url

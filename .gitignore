@@ -30,5 +30,15 @@ unit-tests.xml
 .env
 .secrets
 
+# Python local environment and caches
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Frontend generated files and dependencies
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+
 # megalinter
 report/
