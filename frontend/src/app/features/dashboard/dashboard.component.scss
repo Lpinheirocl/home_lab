@@ -1,0 +1,8 @@
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+h2 { margin-bottom: 8px; }
+.muted { color: #64748b; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 28px; }
+article { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+article span, article strong { display: block; }
+article span { color: #64748b; margin-bottom: 12px; }
+article strong { font-size: 1.4rem; }
