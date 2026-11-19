@@ -50,8 +50,23 @@ class ClusterService:
     def _disks() -> list[DiskResponse]:
         disks: list[DiskResponse] = []
         seen_mountpoints: set[str] = set()
-        for partition in shutil.disk_partitions(all=False):
-            mountpoint = partition.mountpoint
+        with open("/proc/mounts", encoding="utf-8") as mounts:
+            partitions = [line.split()[:3] for line in mounts if len(line.split()) >= 3]
+        pseudo_filesystems = {
+            "autofs",
+            "cgroup",
+            "cgroup2",
+            "devpts",
+            "mqueue",
+            "proc",
+            "procfs",
+            "sysfs",
+            "tmpfs",
+        }
+        for device, raw_mountpoint, filesystem in partitions:
+            mountpoint = raw_mountpoint.replace("\\040", " ").replace("\\011", "\t")
+            if filesystem in pseudo_filesystems and mountpoint != "/":
+                continue
             if mountpoint in seen_mountpoints or mountpoint.startswith(
                 ("/proc", "/sys", "/dev", "/run")
             ):
@@ -63,7 +78,7 @@ class ClusterService:
             seen_mountpoints.add(mountpoint)
             disks.append(
                 DiskResponse(
-                    device=partition.device or "filesystem",
+                    device=device or "filesystem",
                     mountpoint=mountpoint,
                     percent=round(usage.used / usage.total * 100, 1),
                     used_bytes=usage.used,
