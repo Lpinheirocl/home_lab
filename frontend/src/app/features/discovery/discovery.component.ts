@@ -38,7 +38,9 @@ export class DiscoveryComponent {
       name: candidate.name,
       display_name: candidate.display_name,
       namespace: candidate.namespace,
-      access_url: candidate.ingress_hosts[0] ? `https://${candidate.ingress_hosts[0]}` : undefined,
+      access_url: candidate.ingress_hosts[0]
+        ? `http://${candidate.ingress_hosts[0]}${candidate.ingress_hosts[0] === 'raspberrypi' ? ':32618' : ''}`
+        : undefined,
       favorite: false,
       visible: true,
     }).subscribe({
