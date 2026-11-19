@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { catchError, map, of, shareReplay, startWith } from 'rxjs';
+import { catchError, combineLatest, map, of, shareReplay, startWith } from 'rxjs';
 import { Application } from '../../core/models/application.model';
 import { ApplicationsApiService } from '../../core/services/applications-api.service';
 import { DashboardApiService } from '../../core/services/dashboard-api.service';
@@ -22,8 +22,21 @@ export class DashboardComponent {
   private readonly dashboardApi = inject(DashboardApiService);
   private readonly applicationsApi = inject(ApplicationsApiService);
 
-  readonly applications$ = this.applicationsApi.list().pipe(
-    catchError(() => of([] as Application[])),
+  private readonly discovered$ = this.applicationsApi.discover().pipe(
+    catchError(() => of([])),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
+
+  readonly applications$ = combineLatest([
+    this.applicationsApi.list().pipe(catchError(() => of([] as Application[]))),
+    this.discovered$,
+  ]).pipe(
+    map(([applications, discovered]) => applications.map((application) => {
+      const candidate = discovered.find((item) => item.name === application.name && item.namespace === application.namespace);
+      return application.access_url || !candidate?.access_url
+        ? application
+        : { ...application, access_url: candidate.access_url };
+    })),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
@@ -32,7 +45,7 @@ export class DashboardComponent {
     startWith(0),
   );
 
-  readonly podsCount$ = this.applicationsApi.discover().pipe(
+  readonly podsCount$ = this.discovered$.pipe(
     map((applications) => applications.reduce((total, application) => total + application.ready_replicas, 0)),
     startWith(0),
     catchError(() => of(0)),
