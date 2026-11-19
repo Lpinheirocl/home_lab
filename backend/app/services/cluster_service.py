@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 
+from app.core.config import get_settings
 from app.kubernetes.client import build_api_clients
 from app.schemas.cluster import DiskResponse, PodResponse, TelemetryResponse
 
@@ -33,13 +34,19 @@ class ClusterService:
         return sorted(result, key=lambda pod: (pod.namespace, pod.name))
 
     def telemetry(self) -> TelemetryResponse:
-        memory = self._memory()
+        settings = get_settings()
+        proc_root = (
+            settings.host_proc_root
+            if os.path.isfile(f"{settings.host_proc_root}/meminfo")
+            else "/proc"
+        )
+        memory = self._memory(proc_root)
         disks = self._disks()
         total_memory = memory[0]
         used_memory = total_memory - memory[1] - memory[2]
         memory_percent = round(used_memory / total_memory * 100, 1) if total_memory else 0
         return TelemetryResponse(
-            cpu_percent=self._cpu_percent(),
+            cpu_percent=self._cpu_percent(proc_root),
             memory_percent=memory_percent,
             memory_used_bytes=used_memory,
             memory_total_bytes=total_memory,
@@ -85,12 +92,34 @@ class ClusterService:
                     total_bytes=usage.total,
                 )
             )
+        host_mount_root = settings.host_mount_root
+        if os.path.isdir(host_mount_root):
+            for entry in os.scandir(host_mount_root):
+                if not entry.is_dir() or not os.path.ismount(entry.path):
+                    continue
+                try:
+                    usage = shutil.disk_usage(entry.path)
+                except OSError:
+                    continue
+                mountpoint = f"/mnt/{entry.name}"
+                if mountpoint in seen_mountpoints:
+                    continue
+                seen_mountpoints.add(mountpoint)
+                disks.append(
+                    DiskResponse(
+                        device="host mount",
+                        mountpoint=mountpoint,
+                        percent=round(usage.used / usage.total * 100, 1),
+                        used_bytes=usage.used,
+                        total_bytes=usage.total,
+                    )
+                )
         return sorted(disks, key=lambda disk: disk.mountpoint)
 
     @staticmethod
-    def _memory() -> tuple[int, int, int]:
+    def _memory(proc_root: str) -> tuple[int, int, int]:
         values: dict[str, int] = {}
-        with open("/proc/meminfo", encoding="utf-8") as meminfo:
+        with open(f"{proc_root}/meminfo", encoding="utf-8") as meminfo:
             for line in meminfo:
                 key, value = line.split(":", 1)
                 values[key] = int(value.strip().split()[0]) * 1024
@@ -101,10 +130,10 @@ class ClusterService:
         )
 
     @staticmethod
-    def _cpu_percent() -> float:
-        first = ClusterService._cpu_times()
+    def _cpu_percent(proc_root: str) -> float:
+        first = ClusterService._cpu_times(proc_root)
         time.sleep(0.1)
-        second = ClusterService._cpu_times()
+        second = ClusterService._cpu_times(proc_root)
         total_delta = second[0] - first[0]
         idle_delta = second[1] - first[1]
         if total_delta <= 0:
@@ -112,8 +141,8 @@ class ClusterService:
         return round((1 - idle_delta / total_delta) * 100, 1)
 
     @staticmethod
-    def _cpu_times() -> tuple[int, int]:
-        with open("/proc/stat", encoding="utf-8") as proc_stat:
+    def _cpu_times(proc_root: str) -> tuple[int, int]:
+        with open(f"{proc_root}/stat", encoding="utf-8") as proc_stat:
             values = proc_stat.readline().split()[1:]
         numbers = [int(value) for value in values]
         idle = numbers[3] + (numbers[4] if len(numbers) > 4 else 0)

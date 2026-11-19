@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     kubernetes_in_cluster: bool = True
     public_host: str = "raspberrypi"
     public_http_port: int = 32618
+    host_mount_root: str = "/host/mnt"
+    host_proc_root: str = "/host/proc"
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="HSM_", extra="ignore")
 
