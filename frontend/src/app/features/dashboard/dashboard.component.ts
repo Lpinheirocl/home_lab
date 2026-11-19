@@ -1,4 +1,5 @@
 import { AsyncPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { catchError, combineLatest, map, of, shareReplay, startWith } from 'rxjs';
 import { Application } from '../../core/models/application.model';
@@ -13,7 +14,7 @@ interface ClusterStatus {
 @Component({
   standalone: true,
   selector: 'hsm-dashboard',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,5 +56,10 @@ export class DashboardComponent {
     map((): ClusterStatus => ({ label: 'API conectada', connected: true })),
     startWith({ label: 'Verificando API...', connected: false }),
     catchError(() => of({ label: 'API indisponível', connected: false })),
+  );
+
+  readonly telemetry$ = this.dashboardApi.getTelemetry().pipe(
+    startWith(null),
+    catchError(() => of(null)),
   );
 }
