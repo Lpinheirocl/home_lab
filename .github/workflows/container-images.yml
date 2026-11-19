@@ -98,7 +98,7 @@ jobs:
         run: |
           tar --exclude='postgres/secret.yaml' -C deployment -czf - . | \
             ssh -p "${SSH_PORT:-22}" "${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}" \
-            "mkdir -p '${DEPLOY_PATH}' && env -u TAR_OPTIONS tar --extract --gzip --file=- --directory='${DEPLOY_PATH}' --overwrite --no-overwrite-dir --no-same-owner --no-same-permissions"
+            "mkdir -p '${DEPLOY_PATH}' && env -u TAR_OPTIONS tar --extract --gzip --file=- --directory='${DEPLOY_PATH}' --no-overwrite-dir --no-same-owner --no-same-permissions"
 
       - name: Apply manifests and migrate database
         run: |
