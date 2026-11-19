@@ -12,5 +12,7 @@ article strong { font-size: 1.4rem; }
 .application-link { display: flex; flex-direction: column; gap: 8px; padding: 18px; color: #172033; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
 .application-link:hover { transform: translateY(-2px); box-shadow: 0 8px 22px #1720331f; }
 .application-link span { color: #2563eb; font-size: .9rem; }
+.application-link img, .icon-placeholder { width: 56px; height: 56px; border-radius: 14px; object-fit: cover; }
+.icon-placeholder { display: grid; place-items: center; color: #2563eb; background: #dbeafe; font-size: 1.4rem; }
 .application-link.unavailable { color: #64748b; }
 .application-link.unavailable span { color: #94a3b8; }
