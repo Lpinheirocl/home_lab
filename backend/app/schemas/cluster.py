@@ -14,11 +14,17 @@ class PodResponse(BaseModel):
     created_at: datetime | None = None
 
 
+class DiskResponse(BaseModel):
+    device: str
+    mountpoint: str
+    percent: float
+    used_bytes: int
+    total_bytes: int
+
+
 class TelemetryResponse(BaseModel):
     cpu_percent: float
     memory_percent: float
     memory_used_bytes: int
     memory_total_bytes: int
-    disk_percent: float
-    disk_used_bytes: int
-    disk_total_bytes: int
+    disks: list[DiskResponse]
