@@ -17,7 +17,7 @@ spec:
       containers:
         - name: backend
           image: ghcr.io/lpinheirocl/home-server-manager-backend:arm64
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8000
