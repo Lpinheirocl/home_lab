@@ -82,6 +82,8 @@ class ClusterService:
                 usage = shutil.disk_usage(mountpoint)
             except OSError:
                 continue
+            if usage.total == 0:
+                continue
             seen_mountpoints.add(mountpoint)
             disks.append(
                 DiskResponse(
@@ -100,6 +102,8 @@ class ClusterService:
                 try:
                     usage = shutil.disk_usage(entry.path)
                 except OSError:
+                    continue
+                if usage.total == 0:
                     continue
                 mountpoint = f"/mnt/{entry.name}"
                 if mountpoint in seen_mountpoints:
