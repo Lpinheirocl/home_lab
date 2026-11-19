@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { catchError, of, startWith } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { DashboardApiService } from '../../core/services/dashboard-api.service';
 
 @Component({
@@ -13,6 +13,6 @@ import { DashboardApiService } from '../../core/services/dashboard-api.service';
 })
 export class PodsComponent {
   private readonly api = inject(DashboardApiService);
-  readonly pods$ = this.api.getPods().pipe(startWith(null), catchError(() => of([])));
+  readonly pods$ = this.api.getPods().pipe(catchError(() => of([])));
 }
 
