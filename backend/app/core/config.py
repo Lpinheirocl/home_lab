@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://hsm:hsm@localhost:5432/home_server_manager"
     kubernetes_enabled: bool = False
     kubernetes_in_cluster: bool = True
+    public_host: str = "raspberrypi"
+    public_http_port: int = 32618
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="HSM_", extra="ignore")
 

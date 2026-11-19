@@ -7,5 +7,6 @@ export interface DiscoveredApplication {
   ready_replicas: number;
   services: string[];
   ingress_hosts: string[];
+  access_url: string | null;
   source: string;
 }

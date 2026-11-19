@@ -10,4 +10,5 @@ class DiscoveredApplication(BaseModel):
     ready_replicas: int
     services: list[str]
     ingress_hosts: list[str]
+    access_url: str | None = None
     source: str = "kubernetes"
