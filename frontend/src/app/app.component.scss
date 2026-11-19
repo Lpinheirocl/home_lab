@@ -2,6 +2,7 @@
 .shell { display: flex; min-height: 100vh; background: #f4f7fb; color: #172033; }
 .sidebar { width: 240px; padding: 24px; background: #172033; color: #fff; }
 .sidebar h1 { font-size: 1.15rem; margin: 0 0 32px; }
+.brand-icon { margin-right: 8px; }
 .sidebar a { color: #dbeafe; text-decoration: none; }
 .sidebar nav { display: grid; gap: 18px; }
 .content { flex: 1; padding: 32px; }

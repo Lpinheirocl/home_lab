@@ -1,0 +1,12 @@
+.page { max-width: 1100px; }
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.muted { color: #64748b; }
+.card { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+.pod-list { display: grid; gap: 12px; margin-top: 24px; }
+.pod { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.pod h3, .pod p { margin: 0 0 6px; }
+.pod p, .pod-status span { color: #64748b; }
+.pod-status { display: grid; gap: 6px; text-align: right; }
+.pod-status strong { color: #dc2626; }
+.pod-status strong.ready { color: #16a34a; }
+@media (max-width: 700px) { .pod { align-items: flex-start; flex-direction: column; } .pod-status { text-align: left; } }
