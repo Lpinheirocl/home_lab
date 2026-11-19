@@ -51,7 +51,17 @@ export class ApplicationsComponent {
 
   editApplication(application: Application): void {
     this.editing.set(application);
-    this.form.patchValue(application);
+    this.form.patchValue({
+      name: application.name,
+      display_name: application.display_name,
+      description: application.description ?? '',
+      icon: application.icon ?? '',
+      category: application.category ?? '',
+      namespace: application.namespace ?? '',
+      access_url: application.access_url ?? '',
+      favorite: application.favorite,
+      visible: application.visible,
+    });
   }
 
   cancelEdit(): void {
