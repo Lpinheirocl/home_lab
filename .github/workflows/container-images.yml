@@ -69,7 +69,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     env:
-      DEPLOY_PATH: ${{ secrets.PATH_DEPLOYMENT }}
+      DEPLOY_PATH: ${{ secrets.PATH_DEPLOYMENT }}/${{ github.event.repository.name }}
       SSH_PORT: ${{ secrets.RPI_SSH_PORT }}
       POSTGRES_PASSWORD: ${{ secrets.HSM_POSTGRES_PASSWORD }}
       DATABASE_URL: ${{ secrets.HSM_DATABASE_URL }}
@@ -96,7 +96,7 @@ jobs:
 
       - name: Copy deployment manifests
         run: |
-          tar --exclude='postgres/secret.yaml' -czf - deployment | \
+          tar --exclude='postgres/secret.yaml' -C deployment -czf - . | \
             ssh -p "${SSH_PORT:-22}" "${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}" \
             "mkdir -p '${DEPLOY_PATH}' && tar -xzf - -C '${DEPLOY_PATH}'"
 
@@ -111,16 +111,16 @@ jobs:
           password="$(printf '%s' "$POSTGRES_PASSWORD_B64" | base64 -d)"
           database_url="$(printf '%s' "$DATABASE_URL_B64" | base64 -d)"
 
-          kubectl apply -f "$DEPLOY_PATH/deployment/namespace.yaml"
+          kubectl apply -f "$DEPLOY_PATH/namespace.yaml"
           kubectl -n "$namespace" create secret generic home-server-manager-postgres \
             --from-literal=username=hsm \
             --from-literal=password="$password" \
             --from-literal=database=home_server_manager \
             --from-literal=database-url="$database_url" \
             --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -k "$DEPLOY_PATH/deployment"
+          kubectl apply -k "$DEPLOY_PATH"
           kubectl -n "$namespace" delete job home-server-manager-migration --ignore-not-found
-          kubectl apply -f "$DEPLOY_PATH/deployment/backend/migration-job.yaml"
+          kubectl apply -f "$DEPLOY_PATH/backend/migration-job.yaml"
           kubectl -n "$namespace" rollout status statefulset/postgres --timeout=180s
           kubectl -n "$namespace" rollout status deployment/backend --timeout=180s
           kubectl -n "$namespace" rollout status deployment/frontend --timeout=180s
