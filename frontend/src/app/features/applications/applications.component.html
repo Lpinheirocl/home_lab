@@ -3,22 +3,23 @@
   <p class="muted">Cadastre e organize aplicações sem alterar recursos do Kubernetes.</p>
   @if (error()) { <p class="error">{{ error() }}</p> }
   <div class="layout">
-    <form class="card form" [formGroup]="form" (ngSubmit)="createApplication()">
-      <h3>Nova aplicação</h3>
+    <form class="card form" [formGroup]="form" (ngSubmit)="saveApplication()">
+      <h3>{{ editing() ? 'Editar aplicação' : 'Nova aplicação' }}</h3>
       <label>Nome técnico<input formControlName="name" placeholder="pihole" /></label>
       <label>Nome de exibição<input formControlName="display_name" placeholder="Pi-hole" /></label>
       <label>Descrição<textarea formControlName="description"></textarea></label>
+      <label>Imagem (URL)<input formControlName="icon" placeholder="https://.../icone.png" /></label>
       <label>Categoria<input formControlName="category" placeholder="infraestrutura" /></label>
       <label>Namespace<input formControlName="namespace" placeholder="default" /></label>
       <label>URL de acesso<input formControlName="access_url" placeholder="https://..." /></label>
       <label class="check"><input type="checkbox" formControlName="favorite" /> Favorita</label>
-      <button type="submit" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Cadastrar' }}</button>
+      <div class="actions"><button type="submit" [disabled]="saving()">{{ saving() ? 'Salvando...' : (editing() ? 'Salvar alterações' : 'Cadastrar') }}</button>@if (editing()) { <button class="secondary" type="button" (click)="cancelEdit()">Cancelar</button> }</div>
     </form>
     <div class="list">
       @if (loading()) { <p class="muted">Carregando aplicações...</p> }
       @if (!loading() && applications().length === 0) { <p class="empty">Nenhuma aplicação cadastrada.</p> }
       @for (application of applications(); track application.id) {
-        <article class="card application"><div><h3>{{ application.display_name }}</h3><p>{{ application.description || 'Sem descrição' }}</p><small>{{ application.namespace || 'Sem namespace' }}</small></div><button class="danger" type="button" (click)="deleteApplication(application)">Remover</button></article>
+        <article class="card application"><div class="application-info">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<div><h3>{{ application.display_name }}</h3><p>{{ application.description || 'Sem descrição' }}</p><small>{{ application.namespace || 'Sem namespace' }}</small></div></div><div class="application-actions"><button type="button" (click)="editApplication(application)">Editar</button><button class="danger" type="button" (click)="deleteApplication(application)">Remover</button></div></article>
       }
     </div>
   </div>

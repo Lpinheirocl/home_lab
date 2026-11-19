@@ -18,9 +18,21 @@ export interface ApplicationCreate {
   name: string;
   display_name: string;
   description?: string;
+  icon?: string;
   category?: string;
   namespace?: string;
   access_url?: string;
   favorite: boolean;
   visible: boolean;
+}
+
+export interface ApplicationUpdate {
+  display_name?: string;
+  description?: string;
+  icon?: string;
+  category?: string;
+  namespace?: string;
+  access_url?: string;
+  favorite?: boolean;
+  visible?: boolean;
 }

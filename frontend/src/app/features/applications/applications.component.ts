@@ -18,10 +18,11 @@ export class ApplicationsComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly editing = signal<Application | null>(null);
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     display_name: ['', [Validators.required, Validators.maxLength(120)]],
-    description: [''], category: [''], namespace: [''], access_url: [''], favorite: [false], visible: [true],
+    description: [''], icon: [''], category: [''], namespace: [''], access_url: [''], favorite: [false], visible: [true],
   });
 
   constructor() { this.loadApplications(); }
@@ -34,14 +35,28 @@ export class ApplicationsComponent {
     });
   }
 
-  createApplication(): void {
+  saveApplication(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving.set(true);
     this.error.set(null);
-    this.api.create(this.form.getRawValue()).subscribe({
-      next: () => { this.form.reset({ favorite: false, visible: true }); this.saving.set(false); this.loadApplications(); },
+    const editing = this.editing();
+    const request = editing
+      ? this.api.update(editing.id, this.form.getRawValue())
+      : this.api.create(this.form.getRawValue());
+    request.subscribe({
+      next: () => { this.cancelEdit(); this.saving.set(false); this.loadApplications(); },
       error: (response: { error?: { detail?: string } }) => { this.error.set(response.error?.detail ?? 'Não foi possível cadastrar a aplicação.'); this.saving.set(false); },
     });
+  }
+
+  editApplication(application: Application): void {
+    this.editing.set(application);
+    this.form.patchValue(application);
+  }
+
+  cancelEdit(): void {
+    this.editing.set(null);
+    this.form.reset({ name: '', display_name: '', description: '', icon: '', category: '', namespace: '', access_url: '', favorite: false, visible: true });
   }
 
   deleteApplication(application: Application): void {
