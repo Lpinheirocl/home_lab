@@ -66,7 +66,7 @@ jobs:
   deploy:
     name: Deploy to Raspberry Pi K3s
     needs: build
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     env:
       DEPLOY_PATH: ${{ secrets.PATH_DEPLOYMENT }}
