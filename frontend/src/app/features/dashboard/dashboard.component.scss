@@ -10,6 +10,12 @@ h2 { margin-bottom: 8px; }
 .telemetry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
 .meter { height: 8px; margin-top: 14px; overflow: hidden; background: #e2e8f0; border-radius: 99px; }
 .meter i { display: block; height: 100%; background: #2563eb; border-radius: inherit; }
+.disk-card { min-width: 260px; }
+.disk-row { margin-top: 12px; }
+.disk-row > div:first-child { display: flex; justify-content: space-between; gap: 12px; }
+.disk-row strong { font-size: .95rem; }
+.disk-row small, .telemetry-note { color: #64748b; }
+.telemetry-note { display: block; margin-top: 10px; }
 article { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
 article span, article strong { display: block; }
 article span { color: #64748b; margin-bottom: 12px; }

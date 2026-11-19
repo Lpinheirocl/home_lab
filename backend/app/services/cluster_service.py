@@ -3,7 +3,7 @@ import shutil
 import time
 
 from app.kubernetes.client import build_api_clients
-from app.schemas.cluster import PodResponse, TelemetryResponse
+from app.schemas.cluster import DiskResponse, PodResponse, TelemetryResponse
 
 
 class ClusterService:
@@ -34,7 +34,7 @@ class ClusterService:
 
     def telemetry(self) -> TelemetryResponse:
         memory = self._memory()
-        disk = shutil.disk_usage("/")
+        disks = self._disks()
         total_memory = memory[0]
         used_memory = total_memory - memory[1] - memory[2]
         memory_percent = round(used_memory / total_memory * 100, 1) if total_memory else 0
@@ -43,10 +43,34 @@ class ClusterService:
             memory_percent=memory_percent,
             memory_used_bytes=used_memory,
             memory_total_bytes=total_memory,
-            disk_percent=round(disk.used / disk.total * 100, 1),
-            disk_used_bytes=disk.used,
-            disk_total_bytes=disk.total,
+            disks=disks,
         )
+
+    @staticmethod
+    def _disks() -> list[DiskResponse]:
+        disks: list[DiskResponse] = []
+        seen_mountpoints: set[str] = set()
+        for partition in shutil.disk_partitions(all=False):
+            mountpoint = partition.mountpoint
+            if mountpoint in seen_mountpoints or mountpoint.startswith(
+                ("/proc", "/sys", "/dev", "/run")
+            ):
+                continue
+            try:
+                usage = shutil.disk_usage(mountpoint)
+            except OSError:
+                continue
+            seen_mountpoints.add(mountpoint)
+            disks.append(
+                DiskResponse(
+                    device=partition.device or "filesystem",
+                    mountpoint=mountpoint,
+                    percent=round(usage.used / usage.total * 100, 1),
+                    used_bytes=usage.used,
+                    total_bytes=usage.total,
+                )
+            )
+        return sorted(disks, key=lambda disk: disk.mountpoint)
 
     @staticmethod
     def _memory() -> tuple[int, int, int]:

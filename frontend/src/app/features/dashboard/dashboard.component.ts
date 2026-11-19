@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { catchError, combineLatest, map, of, shareReplay, startWith } from 'rxjs';
+import { catchError, combineLatest, map, of, shareReplay, startWith, switchMap, timer } from 'rxjs';
 import { Application } from '../../core/models/application.model';
 import { ApplicationsApiService } from '../../core/services/applications-api.service';
 import { DashboardApiService } from '../../core/services/dashboard-api.service';
@@ -58,8 +58,9 @@ export class DashboardComponent {
     catchError(() => of({ label: 'API indisponível', connected: false })),
   );
 
-  readonly telemetry$ = this.dashboardApi.getTelemetry().pipe(
+  readonly telemetry$ = timer(0, 300000).pipe(
+    switchMap(() => this.dashboardApi.getTelemetry().pipe(catchError(() => of(null)))),
     startWith(null),
-    catchError(() => of(null)),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 }
