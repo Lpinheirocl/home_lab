@@ -111,18 +111,21 @@ jobs:
           password="$(printf '%s' "$POSTGRES_PASSWORD_B64" | base64 -d)"
           database_url="$(printf '%s' "$DATABASE_URL_B64" | base64 -d)"
 
-          kubectl apply -f "$DEPLOY_PATH/namespace.yaml"
-          kubectl -n "$namespace" create secret generic home-server-manager-postgres \
+          sudo -n k3s kubectl apply -f "$DEPLOY_PATH/namespace.yaml"
+          sudo -n k3s kubectl -n "$namespace" create secret generic home-server-manager-postgres \
             --from-literal=username=hsm \
             --from-literal=password="$password" \
             --from-literal=database=home_server_manager \
             --from-literal=database-url="$database_url" \
-            --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -k "$DEPLOY_PATH"
-          kubectl -n "$namespace" delete job home-server-manager-migration --ignore-not-found
-          kubectl apply -f "$DEPLOY_PATH/backend/migration-job.yaml"
-          kubectl -n "$namespace" rollout status statefulset/postgres --timeout=180s
-          kubectl -n "$namespace" rollout status deployment/backend --timeout=180s
-          kubectl -n "$namespace" rollout status deployment/frontend --timeout=180s
-          kubectl -n "$namespace" wait --for=condition=complete job/home-server-manager-migration --timeout=180s
+            --dry-run=client -o yaml | sudo -n k3s kubectl apply -f -
+          sudo -n k3s kubectl apply -k "$DEPLOY_PATH"
+          if ! sudo -n k3s kubectl apply -f "$DEPLOY_PATH/ingress.yaml"; then
+            echo "::warning::Ingress não foi aplicado. Verifique o webhook ingress-nginx no cluster."
+          fi
+          sudo -n k3s kubectl -n "$namespace" delete job home-server-manager-migration --ignore-not-found
+          sudo -n k3s kubectl apply -f "$DEPLOY_PATH/backend/migration-job.yaml"
+          sudo -n k3s kubectl -n "$namespace" rollout status statefulset/postgres --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" rollout status deployment/backend --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" rollout status deployment/frontend --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" wait --for=condition=complete job/home-server-manager-migration --timeout=180s
           REMOTE
