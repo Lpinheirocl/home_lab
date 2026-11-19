@@ -83,6 +83,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.RPI_SSH_PRIVATE_KEY }}
 
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          ping: ${{ secrets.RPI_HOST }}
+
       - name: Add Raspberry Pi to known hosts
         run: |
           mkdir -p ~/.ssh
