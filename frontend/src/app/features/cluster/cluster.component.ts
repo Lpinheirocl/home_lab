@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { catchError, of, switchMap, timer } from 'rxjs';
 import { DashboardApiService } from '../../core/services/dashboard-api.service';
 
@@ -13,6 +13,10 @@ import { DashboardApiService } from '../../core/services/dashboard-api.service';
 })
 export class ClusterComponent {
   private readonly api = inject(DashboardApiService);
+  readonly activeResource = signal<string | null>(null);
+  toggleResource(resource: string): void {
+    this.activeResource.update((active) => active === resource ? null : resource);
+  }
   readonly namespaces$ = timer(0, 60000).pipe(switchMap(() => this.api.getNamespaces().pipe(catchError(() => of([])))));
   readonly deployments$ = timer(0, 60000).pipe(switchMap(() => this.api.getDeployments().pipe(catchError(() => of([])))));
   readonly services$ = timer(0, 60000).pipe(switchMap(() => this.api.getServices().pipe(catchError(() => of([])))));

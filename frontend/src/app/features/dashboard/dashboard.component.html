@@ -3,35 +3,6 @@
   <h2>Dashboard</h2>
   <p class="muted">Status do cluster, aplicações e recursos do servidor.</p>
 
-  @if (dashboard$ | async; as state) {
-    @if (state.data; as dashboard) {
-      <div class="cards">
-        <article><span>Cluster K3s</span><strong>{{ dashboard.cluster_connected ? 'Conectado' : 'Indisponível' }}</strong></article>
-        <article><span>Aplicações online</span><strong>{{ dashboard.applications_online }}/{{ dashboard.applications_total }}</strong></article>
-        <article><span>Aplicações offline ou degradadas</span><strong>{{ dashboard.applications_offline }}</strong></article>
-        <article><span>Pods em execução</span><strong>{{ dashboard.pods_running }}/{{ dashboard.pods_total }}</strong></article>
-      </div>
-      <div class="application-panel">
-        <h3>Estado das aplicações</h3>
-        @for (application of dashboard.applications; track application.id) {
-          <article class="status-row">
-            <div><strong>{{ application.display_name }}</strong><small>{{ application.namespace || 'Sem namespace' }} · {{ application.ready_replicas }}/{{ application.replicas }} réplicas prontas</small></div>
-            <span class="status-pill" [class.online]="application.status === 'online'" [class.offline]="application.status === 'offline' || application.status === 'degraded'">{{ application.status }}</span>
-          </article>
-        }
-        @if (dashboard.applications.length === 0) { <p class="muted">Cadastre aplicações ou execute a descoberta.</p> }
-      </div>
-      <div class="application-panel">
-        <h3>Atividade recente do cluster</h3>
-        @for (event of dashboard.recent_events; track $index) {
-          <article class="status-row"><div><strong>{{ event.reason || event.event_type || 'Evento' }} · {{ event.name }}</strong><small>{{ event.namespace }} · {{ event.message }}</small></div><small>{{ event.created_at | date:'short' }}</small></article>
-        }
-        @if (dashboard.recent_events.length === 0) { <p class="muted">Nenhum evento recente.</p> }
-      </div>
-    } @else if (state.error) { <p class="error">{{ state.error }}</p> }
-    @else if (state.loading) { <p class="muted">Carregando estado do cluster...</p> }
-  }
-
   <div class="telemetry" aria-label="Telemetria da máquina">
     <h3>Telemetria do servidor</h3>
     @if (telemetry$ | async; as telemetry) {
@@ -62,17 +33,46 @@
           <div><strong>Memória na última hora</strong><div class="history-bars">@for (point of metrics.memory_history; track $index) { <i [style.height.%]="point.value"></i> }</div></div>
         </div>
       } @else { <p class="muted">Configure HSM_PROMETHEUS_URL e Node Exporter para habilitar o histórico.</p> }
+    } @else { <p class="muted">Carregando histórico de métricas...</p> }
+  </div>
+
+  <div class="application-panel">
+    <h3>Aplicações visíveis <a routerLink="/applications">Gerenciar →</a></h3>
+    <div class="application-grid">
+      @for (application of (applications$ | async) ?? []; track application.id) {
+        @if (application.access_url) {
+          <a class="application-link" [href]="application.access_url" target="_blank" rel="noopener noreferrer">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>Abrir aplicação ↗</span></a>
+        } @else {
+          <article class="application-link unavailable">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>URL não configurada</span></article>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="application-panel">
+    <h3>Resumo do cluster</h3>
+    @if (dashboard$ | async; as state) {
+      @if (state.data; as dashboard) {
+        <div class="cards">
+          <article><span>Cluster K3s</span><strong>{{ dashboard.cluster_connected ? 'Conectado' : 'Indisponível' }}</strong></article>
+          <article><span>Aplicações online</span><strong>{{ dashboard.applications_online }}/{{ dashboard.applications_total }}</strong></article>
+          <article><span>Aplicações offline ou degradadas</span><strong>{{ dashboard.applications_offline }}</strong></article>
+          <article><span>Pods em execução</span><strong>{{ dashboard.pods_running }}/{{ dashboard.pods_total }}</strong></article>
+        </div>
+        <h3 class="subheading">Estado das aplicações</h3>
+        @for (application of dashboard.applications; track application.id) {
+          <article class="status-row"><div><strong>{{ application.display_name }}</strong><small>{{ application.namespace || 'Sem namespace' }} · {{ application.ready_replicas }}/{{ application.replicas }} réplicas prontas</small></div><span class="status-pill" [class.online]="application.status === 'online'" [class.offline]="application.status === 'offline' || application.status === 'degraded'">{{ application.status }}</span></article>
+        }
+        @if (dashboard.applications.length === 0) { <p class="muted">Cadastre aplicações ou execute a descoberta.</p> }
+        <h3 class="subheading">Atividade recente do cluster</h3>
+        @for (event of dashboard.recent_events; track $index) {
+          <article class="status-row"><div><strong>{{ event.reason || event.event_type || 'Evento' }} · {{ event.name }}</strong><small>{{ event.namespace }} · {{ event.message }}</small></div><small>{{ event.created_at | date:'short' }}</small></article>
+        }
+        @if (dashboard.recent_events.length === 0) { <p class="muted">Nenhum evento recente.</p> }
+      } @else if (state.error) { <p class="error">{{ state.error }}</p> }
+      @else if (state.loading) { <p class="muted">Carregando estado do cluster...</p> }
     }
   </div>
 
-  <div class="application-panel"><h3>Aplicações visíveis <a routerLink="/applications">Gerenciar →</a></h3><div class="application-grid">
-    @for (application of (applications$ | async) ?? []; track application.id) {
-      @if (application.access_url) {
-        <a class="application-link" [href]="application.access_url" target="_blank" rel="noopener noreferrer">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>Abrir aplicação ↗</span></a>
-      } @else {
-        <article class="application-link unavailable">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>URL não configurada</span></article>
-      }
-    }
-  </div></div>
   @if (live$ | async; as live) { @if (live.type === 'dashboard_update') { <small class="telemetry-note">Tempo real via WebSocket · {{ live.pods_running }}/{{ live.pods_total }} Pods · CPU {{ live.telemetry?.cpu_percent }}% · RAM {{ live.telemetry?.memory_percent }}%</small> } }
 </section>
