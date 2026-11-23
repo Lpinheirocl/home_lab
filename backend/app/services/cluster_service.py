@@ -69,6 +69,7 @@ class ClusterService:
             "mqueue",
             "proc",
             "procfs",
+            "squashfs",
             "sysfs",
             "tmpfs",
         }
