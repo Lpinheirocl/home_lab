@@ -24,6 +24,8 @@ export interface ApplicationCreate {
   access_url?: string;
   favorite: boolean;
   visible: boolean;
+  discovery_source?: string;
+  resources?: {resource_type: string; resource_name: string; namespace: string}[];
 }
 
 export interface ApplicationUpdate {

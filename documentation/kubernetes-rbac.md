@@ -1,6 +1,6 @@
 # RBAC do Home Server Manager
 
-Os manifestos em `deployment/rbac/` concedem ao backend somente leitura sobre os recursos necessários para descoberta e consulta:
+Os manifestos em `deployment/rbac/` concedem ao backend leitura para descoberta e monitoramento, além de `patch` restrito a Deployments para reiniciar e escalar aplicações:
 
 - Namespaces.
 - Pods e logs.
@@ -8,14 +8,13 @@ Os manifestos em `deployment/rbac/` concedem ao backend somente leitura sobre os
 - Events.
 - Deployments.
 - Ingresses.
+- Métricas de Pods pela API `metrics.k8s.io`.
 
-Não há permissões `create`, `update`, `patch`, `delete` ou acesso a Secrets.
+O backend não pode criar ou remover recursos e não tem acesso a Secrets. O patch de Deployment é usado somente pelos endpoints validados de reinício e escala.
 
-Aplicação futura, somente após revisão:
+Aplicação dos manifestos:
 
 ```bash
 kubectl apply -f deployment/namespace.yaml
 kubectl apply -f deployment/rbac/
 ```
-
-Esses comandos ainda não devem ser executados no servidor atual.

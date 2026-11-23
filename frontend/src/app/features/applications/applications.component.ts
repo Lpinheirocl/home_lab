@@ -19,6 +19,8 @@ export class ApplicationsComponent {
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
   readonly editing = signal<Application | null>(null);
+  readonly selectedLogs = signal<{application: string; logs: string} | null>(null);
+  readonly operationMessage = signal<string | null>(null);
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     display_name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -72,5 +74,35 @@ export class ApplicationsComponent {
   deleteApplication(application: Application): void {
     if (!confirm(`Remover o cadastro de ${application.display_name}?`)) return;
     this.api.delete(application.id).subscribe({ next: () => this.loadApplications(), error: () => this.error.set('Não foi possível remover a aplicação.') });
+  }
+
+  showLogs(application: Application): void {
+    this.operationMessage.set(null);
+    this.api.logs(application.id).subscribe({
+      next: (result) => this.selectedLogs.set(result),
+      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível carregar os logs.'),
+    });
+  }
+
+  restart(application: Application): void {
+    if (!confirm(`Solicitar reinício de ${application.display_name}?`)) return;
+    this.api.restart(application.id).subscribe({
+      next: (result) => this.operationMessage.set(result.message),
+      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível reiniciar a aplicação.'),
+    });
+  }
+
+  scale(application: Application): void {
+    const input = prompt(`Novo número de réplicas para ${application.display_name} (0 a 20):`);
+    if (input === null) return;
+    const replicas = Number(input);
+    if (!Number.isInteger(replicas) || replicas < 0 || replicas > 20) {
+      this.operationMessage.set('Informe um número inteiro entre 0 e 20.');
+      return;
+    }
+    this.api.scale(application.id, replicas).subscribe({
+      next: (result) => this.operationMessage.set(result.message),
+      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível escalar a aplicação.'),
+    });
   }
 }

@@ -21,4 +21,8 @@ button:disabled { opacity: .6; cursor: wait; }
 .danger { background: #dc2626; }
 .error { padding: 12px; color: #991b1b; background: #fee2e2; border-radius: 8px; }
 .empty { padding: 24px; color: #64748b; background: white; border-radius: 12px; }
+.logs { margin: 18px 0; }
+.logs header { display: flex; align-items: center; justify-content: space-between; }
+.logs pre { max-height: 420px; overflow: auto; padding: 14px; color: #e2e8f0; background: #0f172a; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 920px) { .application { align-items: flex-start; flex-direction: column; gap: 14px; } .application-actions { flex-wrap: wrap; } }
 @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }

@@ -1,0 +1,12 @@
+<section class="page">
+  <p class="eyebrow">Kubernetes</p><h2>Recursos do cluster</h2>
+  <p class="muted">Consultas somente leitura atualizadas a cada minuto.</p>
+  <div class="resource-grid">
+    <article class="card"><h3>Namespaces</h3>@if (namespaces$ | async; as items) { @for (item of items; track item.name) { <p><strong>{{ item.name }}</strong><small>{{ item.status }}</small></p> } }</article>
+    <article class="card"><h3>Deployments</h3>@if (deployments$ | async; as items) { @for (item of items; track item.namespace + item.name) { <p><strong>{{ item.name }}</strong><small>{{ item.namespace }} · {{ item.ready_replicas }}/{{ item.replicas }} prontos</small></p> } }</article>
+    <article class="card"><h3>Services</h3>@if (services$ | async; as items) { @for (item of items; track item.namespace + item.name) { <p><strong>{{ item.name }}</strong><small>{{ item.namespace }} · {{ item.type }} · {{ item.ports.join(', ') || 'sem portas' }}</small></p> } }</article>
+    <article class="card"><h3>Ingresses</h3>@if (ingresses$ | async; as items) { @for (item of items; track item.namespace + item.name) { <p><strong>{{ item.name }}</strong><small>{{ item.namespace }} · {{ item.hosts.join(', ') || 'sem host' }}</small></p> } }</article>
+    <article class="card"><h3>Métricas de Pods</h3>@if (metrics$ | async; as items) { @if (items) { @for (item of items; track item.namespace + item.pod) { <p><strong>{{ item.pod }}</strong><small>{{ item.namespace }} · CPU {{ item.cpu }} · memória {{ item.memory }}</small></p> } } @else { <p class="muted">metrics.k8s.io indisponível; verifique o Metrics Server.</p> } }</article>
+    <article class="card"><h3>Eventos recentes</h3>@if (events$ | async; as items) { @for (item of items; track $index) { <p><strong>{{ item.reason || item.event_type || 'Evento' }} · {{ item.name }}</strong><small>{{ item.namespace }} · {{ item.message }}</small></p> } }</article>
+  </div>
+</section>

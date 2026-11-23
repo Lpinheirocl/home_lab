@@ -1,0 +1,9 @@
+.page { max-width: 1200px; }
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.muted, small { color: #64748b; }
+.resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; }
+.card { padding: 18px; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+.card h3 { margin-top: 0; }
+.card p { padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.card strong, .card small { display: block; }
+.card small { margin-top: 4px; }

@@ -11,3 +11,4 @@ data:
   HSM_PUBLIC_HTTP_PORT: "32618"
   HSM_HOST_PROC_ROOT: /host/proc
   HSM_HOST_ROOT: /host/root
+  HSM_PROMETHEUS_URL: http://prometheus:9090

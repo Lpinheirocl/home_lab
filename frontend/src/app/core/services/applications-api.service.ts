@@ -14,4 +14,9 @@ export class ApplicationsApiService {
   update(id: number, payload: ApplicationUpdate): Observable<Application> { return this.http.put<Application>(`${this.apiUrl}/${id}`, payload); }
   delete(id: number): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/${id}`); }
   discover(): Observable<DiscoveredApplication[]> { return this.http.post<DiscoveredApplication[]>(`${this.apiUrl}/discover`, {}); }
+  logs(id: number): Observable<{application: string; logs: string}> { return this.http.get<{application: string; logs: string}>(`${this.apiUrl}/${id}/logs`); }
+  restart(id: number): Observable<{status: string; message: string}> { return this.http.post<{status: string; message: string}>(`${this.apiUrl}/${id}/restart`, {}); }
+  scale(id: number, replicas: number): Observable<{status: string; message: string}> {
+    return this.http.post<{status: string; message: string}>(`${this.apiUrl}/${id}/scale`, {replicas});
+  }
 }
