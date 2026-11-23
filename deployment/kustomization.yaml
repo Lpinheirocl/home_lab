@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: home-server-manager
+resources:
+  - namespace.yaml
+  - rbac/service-account.yaml
+  - rbac/read-cluster-role.yaml
+  - rbac/read-cluster-role-binding.yaml
+  - postgres/service.yaml
+  - postgres/stateful-set.yaml
+  - backend/config-map.yaml
+  - backend/service.yaml
+  - backend/deployment.yaml
+  - frontend/service.yaml
+  - frontend/deployment.yaml
+  - ingress.yaml
+images:
+  - name: ghcr.io/lpinheirocl/home-server-manager-backend
+    newName: ghcr.io/lpinheirocl/home-server-manager-backend
+    newTag: arm64
+  - name: ghcr.io/lpinheirocl/home-server-manager-frontend
+    newName: ghcr.io/lpinheirocl/home-server-manager-frontend
+    newTag: arm64

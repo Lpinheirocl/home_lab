@@ -1,0 +1,51 @@
+<section>
+  <p class="eyebrow">Home Server Manager</p>
+  <h2>Dashboard</h2>
+  <p class="muted">Resumo do catálogo e dos recursos ativos no cluster.</p>
+
+  <div class="telemetry" aria-label="Telemetria da máquina">
+    <h3>Telemetria da máquina</h3>
+    @if (telemetry$ | async; as telemetry) {
+      <div class="telemetry-grid">
+        <article>
+          <span>CPU</span>
+          <strong>{{ telemetry.cpu_percent }}%</strong>
+          <div class="meter"><i [style.width.%]="telemetry.cpu_percent"></i></div>
+        </article>
+        <article>
+          <span>Memória</span>
+          <strong>{{ telemetry.memory_percent }}%</strong>
+          <div class="meter"><i [style.width.%]="telemetry.memory_percent"></i></div>
+        </article>
+        <article class="disk-card">
+          <span>Discos</span>
+          @for (disk of telemetry.disks; track disk.mountpoint) {
+            <div class="disk-row">
+              <div><strong>{{ disk.mountpoint }}</strong><small>{{ disk.percent }}%</small></div>
+              <div class="meter"><i [style.width.%]="disk.percent"></i></div>
+            </div>
+          }
+        </article>
+      </div>
+    } @else {
+      <div class="telemetry-grid"><article><span>Telemetria</span><strong>Carregando...</strong></article></div>
+    }
+    <small class="telemetry-note">Atualização automática a cada 5 minutos.</small>
+  </div>
+
+  <div class="cards">
+    <a class="summary-card" routerLink="/applications"><span>Aplicações</span><strong>{{ applicationsCount$ | async }}</strong><small>Ver todas as aplicações →</small></a>
+    <a class="summary-card" routerLink="/pods"><span>Pods ativos</span><strong>{{ podsCount$ | async }}</strong><small>Ver status dos Pods →</small></a>
+    <article><span>Backend</span><strong>{{ (clusterStatus$ | async)?.label }}</strong></article>
+  </div>
+
+  <div class="application-panel"><h3>Acesso rápido</h3><div class="application-grid">
+    @for (application of (applications$ | async) ?? []; track application.id) {
+      @if (application.access_url) {
+        <a class="application-link" [href]="application.access_url" target="_blank" rel="noopener noreferrer">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.display_name }}</strong><span>Abrir aplicação ↗</span></a>
+      } @else {
+        <article class="application-link unavailable">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.display_name }}</strong><span>URL não configurada</span></article>
+      }
+    }
+  </div></div>
+</section>

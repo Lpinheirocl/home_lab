@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: home-server-manager-backend
+  namespace: home-server-manager
+data:
+  HSM_ENVIRONMENT: production
+  HSM_KUBERNETES_ENABLED: "true"
+  HSM_KUBERNETES_IN_CLUSTER: "true"
+  HSM_PUBLIC_HOST: raspberrypi
+  HSM_PUBLIC_HTTP_PORT: "32618"
+  HSM_HOST_PROC_ROOT: /host/proc
+  HSM_HOST_ROOT: /host/root

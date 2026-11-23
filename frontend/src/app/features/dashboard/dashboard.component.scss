@@ -1,0 +1,32 @@
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+h2 { margin-bottom: 8px; }
+.muted { color: #64748b; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 28px; }
+.summary-card { display: block; padding: 20px; color: inherit; text-decoration: none; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; transition: transform .15s ease, box-shadow .15s ease; }
+.summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px #1720331f; }
+.summary-card small { display: block; margin-top: 10px; color: #2563eb; }
+.telemetry { margin-top: 28px; }
+.telemetry h3 { margin-bottom: 14px; }
+.telemetry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.meter { height: 8px; margin-top: 14px; overflow: hidden; background: #e2e8f0; border-radius: 99px; }
+.meter i { display: block; height: 100%; background: #2563eb; border-radius: inherit; }
+.disk-card { min-width: 260px; }
+.disk-row { margin-top: 12px; }
+.disk-row > div:first-child { display: flex; justify-content: space-between; gap: 12px; }
+.disk-row strong { font-size: .95rem; }
+.disk-row small, .telemetry-note { color: #64748b; }
+.telemetry-note { display: block; margin-top: 10px; }
+article { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+article span, article strong { display: block; }
+article span { color: #64748b; margin-bottom: 12px; }
+article strong { font-size: 1.4rem; }
+.application-panel { margin-top: 28px; }
+.application-panel h3 { margin-bottom: 14px; }
+.application-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.application-link { display: flex; flex-direction: column; gap: 8px; padding: 18px; color: #172033; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+.application-link:hover { transform: translateY(-2px); box-shadow: 0 8px 22px #1720331f; }
+.application-link span { color: #2563eb; font-size: .9rem; }
+.application-link img, .icon-placeholder { width: 56px; height: 56px; border-radius: 14px; object-fit: cover; }
+.icon-placeholder { display: grid; place-items: center; color: #2563eb; background: #dbeafe; font-size: 1.4rem; }
+.application-link.unavailable { color: #64748b; }
+.application-link.unavailable span { color: #94a3b8; }

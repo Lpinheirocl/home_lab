@@ -1,0 +1,24 @@
+.page { max-width: 1100px; }
+.eyebrow { color: #2563eb; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.muted { color: #64748b; }
+.layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 24px; margin-top: 28px; }
+.card { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px #17203312; }
+.form { display: grid; gap: 12px; align-content: start; }
+label { display: grid; gap: 5px; color: #475569; font-size: .9rem; }
+input, textarea { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+textarea { min-height: 70px; resize: vertical; }
+.check { display: flex; align-items: center; }
+.actions, .application-actions { display: flex; gap: 8px; }
+.secondary { background: #64748b; }
+button { padding: 10px 14px; border: 0; border-radius: 7px; background: #2563eb; color: white; cursor: pointer; font-weight: 700; }
+button:disabled { opacity: .6; cursor: wait; }
+.application { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.application h3, .application p { margin: 0 0 6px; }
+.application p, .application small { color: #64748b; }
+.application-info { display: flex; align-items: center; gap: 12px; }
+.application-info img, .icon-placeholder { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+.icon-placeholder { display: grid; place-items: center; color: #2563eb; background: #dbeafe; }
+.danger { background: #dc2626; }
+.error { padding: 12px; color: #991b1b; background: #fee2e2; border-radius: 8px; }
+.empty { padding: 24px; color: #64748b; background: white; border-radius: 12px; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }

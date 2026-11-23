@@ -1,0 +1,132 @@
+name: Build and publish ARM64 images
+
+on:
+  push:
+    branches: [main, master, develop]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: lpinheirocl
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: home-server-manager-backend
+            context: ./backend
+          - name: home-server-manager-frontend
+            context: ./frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.name }}
+          tags: |
+            type=raw,value=arm64
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Raspberry Pi K3s
+    needs: build
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_PATH: ${{ secrets.PATH_DEPLOYMENT }}/${{ github.event.repository.name }}
+      SSH_PORT: ${{ secrets.RPI_SSH_PORT }}
+      POSTGRES_PASSWORD: ${{ secrets.HSM_POSTGRES_PASSWORD }}
+      DATABASE_URL: ${{ secrets.HSM_DATABASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.RPI_SSH_PRIVATE_KEY }}
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          ping: ${{ secrets.RPI_HOST }}
+
+      - name: Add Raspberry Pi to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SSH_PORT:-22}" "${{ secrets.RPI_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy deployment manifests
+        run: |
+          tar --exclude='postgres/secret.yaml' -C deployment -czf - . | \
+            ssh -p "${SSH_PORT:-22}" "${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}" \
+            "mkdir -p '${DEPLOY_PATH}' && env -u TAR_OPTIONS tar --extract --gzip --file=- --directory='${DEPLOY_PATH}' --overwrite --no-same-owner --no-same-permissions"
+
+      - name: Apply manifests and migrate database
+        run: |
+          POSTGRES_PASSWORD_B64="$(printf '%s' "$POSTGRES_PASSWORD" | base64 -w0)"
+          DATABASE_URL_B64="$(printf '%s' "$DATABASE_URL" | base64 -w0)"
+          ssh -p "${SSH_PORT:-22}" "${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}" \
+            "POSTGRES_PASSWORD_B64='$POSTGRES_PASSWORD_B64' DATABASE_URL_B64='$DATABASE_URL_B64' DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
+          set -euo pipefail
+          namespace=home-server-manager
+          password="$(printf '%s' "$POSTGRES_PASSWORD_B64" | base64 -d)"
+          database_url="$(printf '%s' "$DATABASE_URL_B64" | base64 -d)"
+
+          sudo -n k3s kubectl apply -f "$DEPLOY_PATH/namespace.yaml"
+          sudo -n k3s kubectl -n "$namespace" create secret generic home-server-manager-postgres \
+            --from-literal=username=hsm \
+            --from-literal=password="$password" \
+            --from-literal=database=home_server_manager \
+            --from-literal=database-url="$database_url" \
+            --dry-run=client -o yaml | sudo -n k3s kubectl apply -f -
+          sudo -n k3s kubectl apply -k "$DEPLOY_PATH"
+          if ! sudo -n k3s kubectl apply -f "$DEPLOY_PATH/ingress.yaml"; then
+            echo "::warning::Ingress não foi aplicado. Verifique o webhook ingress-nginx no cluster."
+          fi
+          sudo -n k3s kubectl -n "$namespace" rollout restart deployment/backend deployment/frontend
+          sudo -n k3s kubectl -n "$namespace" delete job home-server-manager-migration --ignore-not-found
+          sudo -n k3s kubectl apply -f "$DEPLOY_PATH/backend/migration-job.yaml"
+          sudo -n k3s kubectl -n "$namespace" rollout status statefulset/postgres --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" rollout status deployment/backend --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" rollout status deployment/frontend --timeout=180s
+          sudo -n k3s kubectl -n "$namespace" wait --for=condition=complete job/home-server-manager-migration --timeout=180s
+          REMOTE

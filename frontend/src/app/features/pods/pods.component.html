@@ -1,0 +1,26 @@
+<section class="page">
+  <p class="eyebrow">Kubernetes</p>
+  <h2>Pods</h2>
+  <p class="muted">Todos os Pods encontrados no cluster e seu estado atual.</p>
+
+  @if (pods$ | async; as pods) {
+    @if (pods.length === 0) {
+      <p class="card muted">Nenhum Pod encontrado.</p>
+    } @else {
+      <div class="pod-list">
+        @for (pod of pods; track pod.namespace + '/' + pod.name) {
+          <article class="card pod">
+            <div>
+              <h3>{{ pod.name }}</h3>
+              <p>{{ pod.namespace }} · {{ pod.node || 'nó não informado' }}</p>
+            </div>
+            <div class="pod-status">
+              <strong [class.ready]="pod.status === 'Running'">{{ pod.status }}</strong>
+              <span>{{ pod.ready }}/{{ pod.total }} containers prontos · {{ pod.restarts }} reinícios</span>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+</section>
