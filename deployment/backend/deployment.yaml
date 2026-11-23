@@ -31,13 +31,13 @@ spec:
                   name: home-server-manager-postgres
                   key: database-url
           volumeMounts:
-            - name: host-mnt
-              mountPath: /host/mnt
-              readOnly: true
-              mountPropagation: HostToContainer
             - name: host-proc
               mountPath: /host/proc
               readOnly: true
+            - name: host-root
+              mountPath: /host/root
+              readOnly: true
+              mountPropagation: HostToContainer
           resources:
             requests:
               cpu: 50m
@@ -58,11 +58,11 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 20
       volumes:
-        - name: host-mnt
-          hostPath:
-            path: /mnt
-            type: Directory
         - name: host-proc
           hostPath:
             path: /proc
+            type: Directory
+        - name: host-root
+          hostPath:
+            path: /
             type: Directory
