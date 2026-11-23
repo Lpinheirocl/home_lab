@@ -41,7 +41,7 @@ class ClusterService:
             else "/proc"
         )
         memory = self._memory(proc_root)
-        disks = self._disks(settings.host_mount_root)
+        disks = self._disks(settings.host_proc_root, settings.host_root)
         total_memory = memory[0]
         used_memory = total_memory - memory[1] - memory[2]
         memory_percent = round(used_memory / total_memory * 100, 1) if total_memory else 0
@@ -54,10 +54,10 @@ class ClusterService:
         )
 
     @staticmethod
-    def _disks(host_mount_root: str) -> list[DiskResponse]:
+    def _disks(host_proc_root: str, host_root: str) -> list[DiskResponse]:
         disks: list[DiskResponse] = []
         seen_mountpoints: set[str] = set()
-        with open("/proc/mounts", encoding="utf-8") as mounts:
+        with open(f"{host_proc_root}/mounts", encoding="utf-8") as mounts:
             partitions = [line.split()[:3] for line in mounts if len(line.split()) >= 3]
         pseudo_filesystems = {
             "autofs",
@@ -72,14 +72,13 @@ class ClusterService:
         }
         for device, raw_mountpoint, filesystem in partitions:
             mountpoint = raw_mountpoint.replace("\\040", " ").replace("\\011", "\t")
-            if filesystem in pseudo_filesystems and mountpoint != "/":
+            if filesystem in pseudo_filesystems or not device.startswith("/dev/"):
                 continue
-            if mountpoint in seen_mountpoints or mountpoint.startswith(
-                ("/proc", "/sys", "/dev", "/run")
-            ):
+            if mountpoint in seen_mountpoints:
                 continue
+            host_path = os.path.join(host_root, mountpoint.lstrip("/"))
             try:
-                usage = shutil.disk_usage(mountpoint)
+                usage = shutil.disk_usage(host_path)
             except OSError:
                 continue
             if usage.total == 0:
@@ -94,29 +93,6 @@ class ClusterService:
                     total_bytes=usage.total,
                 )
             )
-        if os.path.isdir(host_mount_root):
-            for entry in os.scandir(host_mount_root):
-                if not entry.is_dir() or not os.path.ismount(entry.path):
-                    continue
-                try:
-                    usage = shutil.disk_usage(entry.path)
-                except OSError:
-                    continue
-                if usage.total == 0:
-                    continue
-                mountpoint = f"/mnt/{entry.name}"
-                if mountpoint in seen_mountpoints:
-                    continue
-                seen_mountpoints.add(mountpoint)
-                disks.append(
-                    DiskResponse(
-                        device="host mount",
-                        mountpoint=mountpoint,
-                        percent=round(usage.used / usage.total * 100, 1),
-                        used_bytes=usage.used,
-                        total_bytes=usage.total,
-                    )
-                )
         return sorted(disks, key=lambda disk: disk.mountpoint)
 
     @staticmethod

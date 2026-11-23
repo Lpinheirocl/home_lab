@@ -9,5 +9,5 @@ data:
   HSM_KUBERNETES_IN_CLUSTER: "true"
   HSM_PUBLIC_HOST: raspberrypi
   HSM_PUBLIC_HTTP_PORT: "32618"
-  HSM_HOST_MOUNT_ROOT: /host/mnt
   HSM_HOST_PROC_ROOT: /host/proc
+  HSM_HOST_ROOT: /host/root
