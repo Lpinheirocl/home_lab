@@ -41,6 +41,11 @@ export class DiscoveryComponent {
       access_url: candidate.access_url ?? undefined,
       favorite: false,
       visible: true,
+      discovery_source: 'kubernetes',
+      resources: [
+        {resource_type: 'Deployment', resource_name: candidate.deployment_name, namespace: candidate.namespace},
+        ...candidate.services.map((name) => ({resource_type: 'Service', resource_name: name, namespace: candidate.namespace})),
+      ],
     }).subscribe({
       next: () => { this.candidates.update((items) => items.filter((item) => item.name !== candidate.name || item.namespace !== candidate.namespace)); this.saving.set(null); },
       error: (response: { error?: { detail?: string } }) => { this.error.set(response.error?.detail ?? 'Não foi possível confirmar a aplicação.'); this.saving.set(null); },

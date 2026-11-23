@@ -2,9 +2,19 @@ name: Build and publish ARM64 images
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [ develop]
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the images to the Raspberry Pi K3s cluster
+        type: boolean
+        required: false
+        default: true
+      version:
+        description: Optional version tag to add to the images
+        type: string
+        required: false
 
 env:
   REGISTRY: ghcr.io
@@ -48,8 +58,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.name }}
           tags: |
-            type=raw,value=arm64
+            type=raw,value=arm64,enable=${{ github.event_name != 'workflow_dispatch' || inputs.deploy }}
             type=sha
+            type=ref,event=tag
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
@@ -66,7 +78,7 @@ jobs:
   deploy:
     name: Deploy to Raspberry Pi K3s
     needs: build
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+    if: (github.event_name == 'workflow_dispatch' && inputs.deploy) || (github.event_name == 'push' && ( github.ref == 'refs/heads/develop'))
     runs-on: ubuntu-latest
     env:
       DEPLOY_PATH: ${{ secrets.PATH_DEPLOYMENT }}/${{ github.event.repository.name }}

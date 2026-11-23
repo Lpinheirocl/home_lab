@@ -1,51 +1,78 @@
 <section>
   <p class="eyebrow">Home Server Manager</p>
   <h2>Dashboard</h2>
-  <p class="muted">Resumo do catálogo e dos recursos ativos no cluster.</p>
+  <p class="muted">Status do cluster, aplicações e recursos do servidor.</p>
 
   <div class="telemetry" aria-label="Telemetria da máquina">
-    <h3>Telemetria da máquina</h3>
+    <h3>Telemetria do servidor</h3>
     @if (telemetry$ | async; as telemetry) {
-      <div class="telemetry-grid">
-        <article>
-          <span>CPU</span>
-          <strong>{{ telemetry.cpu_percent }}%</strong>
-          <div class="meter"><i [style.width.%]="telemetry.cpu_percent"></i></div>
-        </article>
-        <article>
-          <span>Memória</span>
-          <strong>{{ telemetry.memory_percent }}%</strong>
-          <div class="meter"><i [style.width.%]="telemetry.memory_percent"></i></div>
-        </article>
-        <article class="disk-card">
-          <span>Discos</span>
-          @for (disk of telemetry.disks; track disk.mountpoint) {
-            <div class="disk-row">
-              <div><strong>{{ disk.mountpoint }}</strong><small>{{ disk.percent }}%</small></div>
-              <div class="meter"><i [style.width.%]="disk.percent"></i></div>
-            </div>
-          }
-        </article>
-      </div>
-    } @else {
-      <div class="telemetry-grid"><article><span>Telemetria</span><strong>Carregando...</strong></article></div>
-    }
+      @if (telemetry) {
+        <div class="telemetry-grid">
+          <article><span>CPU</span><strong>{{ telemetry.cpu_percent }}%</strong><div class="meter"><i [style.width.%]="telemetry.cpu_percent"></i></div></article>
+          <article><span>Memória</span><strong>{{ telemetry.memory_percent }}%</strong><div class="meter"><i [style.width.%]="telemetry.memory_percent"></i></div></article>
+          <article class="disk-card"><span>Discos</span>
+            @for (disk of telemetry.disks; track disk.mountpoint) {
+              <div class="disk-row"><div><strong>{{ disk.mountpoint }}</strong><small>{{ disk.percent }}%</small></div><div class="meter"><i [style.width.%]="disk.percent"></i></div></div>
+            }
+          </article>
+          <article><span>Rede recebida</span><strong>{{ telemetry.network_received_bytes / 1048576 | number:'1.0-1' }} MB</strong></article>
+          <article><span>Rede enviada</span><strong>{{ telemetry.network_transmitted_bytes / 1048576 | number:'1.0-1' }} MB</strong></article>
+          @if (telemetry.temperature_celsius !== null) { <article><span>Temperatura</span><strong>{{ telemetry.temperature_celsius }} °C</strong></article> }
+        </div>
+      } @else { <p class="muted">Telemetria indisponível.</p> }
+    } @else { <p class="muted">Carregando telemetria...</p> }
     <small class="telemetry-note">Atualização automática a cada 5 minutos.</small>
   </div>
 
-  <div class="cards">
-    <a class="summary-card" routerLink="/applications"><span>Aplicações</span><strong>{{ applicationsCount$ | async }}</strong><small>Ver todas as aplicações →</small></a>
-    <a class="summary-card" routerLink="/pods"><span>Pods ativos</span><strong>{{ podsCount$ | async }}</strong><small>Ver status dos Pods →</small></a>
-    <article><span>Backend</span><strong>{{ (clusterStatus$ | async)?.label }}</strong></article>
+  <div class="application-panel">
+    <h3>Histórico de métricas · Prometheus</h3>
+    @if (metricsHistory$ | async; as metrics) {
+      @if (metrics?.available) {
+        <div class="history-grid">
+          <div><strong>CPU na última hora</strong><div class="history-bars">@for (point of metrics.cpu_history; track $index) { <i [style.height.%]="point.value"></i> }</div></div>
+          <div><strong>Memória na última hora</strong><div class="history-bars">@for (point of metrics.memory_history; track $index) { <i [style.height.%]="point.value"></i> }</div></div>
+        </div>
+      } @else { <p class="muted">Configure HSM_PROMETHEUS_URL e Node Exporter para habilitar o histórico.</p> }
+    } @else { <p class="muted">Carregando histórico de métricas...</p> }
   </div>
 
-  <div class="application-panel"><h3>Acesso rápido</h3><div class="application-grid">
-    @for (application of (applications$ | async) ?? []; track application.id) {
-      @if (application.access_url) {
-        <a class="application-link" [href]="application.access_url" target="_blank" rel="noopener noreferrer">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.display_name }}</strong><span>Abrir aplicação ↗</span></a>
-      } @else {
-        <article class="application-link unavailable">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.display_name }}</strong><span>URL não configurada</span></article>
+  <div class="application-panel">
+    <h3>Aplicações visíveis <a routerLink="/applications">Gerenciar →</a></h3>
+    <div class="application-grid">
+      @for (application of (applications$ | async) ?? []; track application.id) {
+        @if (application.access_url) {
+          <a class="application-link" [href]="application.access_url" target="_blank" rel="noopener noreferrer">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>Abrir aplicação ↗</span></a>
+        } @else {
+          <article class="application-link unavailable">@if (application.icon) { <img [src]="application.icon" [alt]="'Imagem de ' + application.display_name" /> } @else { <span class="icon-placeholder">◆</span> }<strong>{{ application.favorite ? '★ ' : '' }}{{ application.display_name }}</strong><span>URL não configurada</span></article>
+        }
       }
+    </div>
+  </div>
+
+  <div class="application-panel">
+    <h3>Resumo do cluster</h3>
+    @if (dashboard$ | async; as state) {
+      @if (state.data; as dashboard) {
+        <div class="cards">
+          <article><span>Cluster K3s</span><strong>{{ dashboard.cluster_connected ? 'Conectado' : 'Indisponível' }}</strong></article>
+          <article><span>Aplicações online</span><strong>{{ dashboard.applications_online }}/{{ dashboard.applications_total }}</strong></article>
+          <article><span>Aplicações offline ou degradadas</span><strong>{{ dashboard.applications_offline }}</strong></article>
+          <article><span>Pods em execução</span><strong>{{ dashboard.pods_running }}/{{ dashboard.pods_total }}</strong></article>
+        </div>
+        <h3 class="subheading">Estado das aplicações</h3>
+        @for (application of dashboard.applications; track application.id) {
+          <article class="status-row"><div><strong>{{ application.display_name }}</strong><small>{{ application.namespace || 'Sem namespace' }} · {{ application.ready_replicas }}/{{ application.replicas }} réplicas prontas</small></div><span class="status-pill" [class.online]="application.status === 'online'" [class.offline]="application.status === 'offline' || application.status === 'degraded'">{{ application.status }}</span></article>
+        }
+        @if (dashboard.applications.length === 0) { <p class="muted">Cadastre aplicações ou execute a descoberta.</p> }
+        <h3 class="subheading">Atividade recente do cluster</h3>
+        @for (event of dashboard.recent_events; track $index) {
+          <article class="status-row"><div><strong>{{ event.reason || event.event_type || 'Evento' }} · {{ event.name }}</strong><small>{{ event.namespace }} · {{ event.message }}</small></div><small>{{ event.created_at | date:'short' }}</small></article>
+        }
+        @if (dashboard.recent_events.length === 0) { <p class="muted">Nenhum evento recente.</p> }
+      } @else if (state.error) { <p class="error">{{ state.error }}</p> }
+      @else if (state.loading) { <p class="muted">Carregando estado do cluster...</p> }
     }
-  </div></div>
+  </div>
+
+  @if (live$ | async; as live) { @if (live.type === 'dashboard_update') { <small class="telemetry-note">Tempo real via WebSocket · {{ live.pods_running }}/{{ live.pods_total }} Pods · CPU {{ live.telemetry?.cpu_percent }}% · RAM {{ live.telemetry?.memory_percent }}%</small> } }
 </section>

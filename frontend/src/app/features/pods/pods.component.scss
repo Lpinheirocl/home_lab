@@ -9,4 +9,21 @@
 .pod-status { display: grid; gap: 6px; text-align: right; }
 .pod-status strong { color: #dc2626; }
 .pod-status strong.ready { color: #16a34a; }
+.legend { margin-top: 18px; }
+.legend h3 { margin-top: 0; }
+.legend p { margin: 8px 0; }
+.state { font-weight: 700; }
+.state-running { color: #15803d; }
+.state-pending { color: #a16207; }
+.state-succeeded { color: #2563eb; }
+.state-failed { color: #dc2626; }
+.state-unknown { color: #64748b; }
+.reason { color: #b45309 !important; }
+.actions { display: flex; gap: 8px; }
+button { padding: 8px 12px; border: 0; border-radius: 7px; background: #2563eb; color: #fff; cursor: pointer; font: inherit; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.message { padding: 10px 14px; color: #92400e; background: #fef3c7; border-radius: 8px; }
+.logs { margin-top: 16px; }
+.logs header { display: flex; align-items: center; justify-content: space-between; }
+.logs pre { max-height: 420px; overflow: auto; padding: 14px; color: #e2e8f0; background: #0f172a; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 700px) { .pod { align-items: flex-start; flex-direction: column; } .pod-status { text-align: left; } }

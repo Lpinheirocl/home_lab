@@ -17,7 +17,12 @@ rules:
   - apiGroups: ["apps"]
     resources:
       - deployments
+      - replicasets
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs: ["patch"]
   - apiGroups: ["networking.k8s.io"]
     resources:
       - ingresses
@@ -26,3 +31,7 @@ rules:
     resources:
       - events
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - pods
+    verbs: ["get", "list"]

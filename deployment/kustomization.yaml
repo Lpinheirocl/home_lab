@@ -13,6 +13,9 @@ resources:
   - backend/deployment.yaml
   - frontend/service.yaml
   - frontend/deployment.yaml
+  - monitoring/prometheus-config.yaml
+  - monitoring/prometheus.yaml
+  - monitoring/node-exporter.yaml
   - ingress.yaml
 images:
   - name: ghcr.io/lpinheirocl/home-server-manager-backend
