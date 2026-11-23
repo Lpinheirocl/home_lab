@@ -41,7 +41,7 @@ class ClusterService:
             else "/proc"
         )
         memory = self._memory(proc_root)
-        disks = self._disks()
+        disks = self._disks(settings.host_mount_root)
         total_memory = memory[0]
         used_memory = total_memory - memory[1] - memory[2]
         memory_percent = round(used_memory / total_memory * 100, 1) if total_memory else 0
@@ -54,7 +54,7 @@ class ClusterService:
         )
 
     @staticmethod
-    def _disks() -> list[DiskResponse]:
+    def _disks(host_mount_root: str) -> list[DiskResponse]:
         disks: list[DiskResponse] = []
         seen_mountpoints: set[str] = set()
         with open("/proc/mounts", encoding="utf-8") as mounts:
@@ -94,7 +94,6 @@ class ClusterService:
                     total_bytes=usage.total,
                 )
             )
-        host_mount_root = settings.host_mount_root
         if os.path.isdir(host_mount_root):
             for entry in os.scandir(host_mount_root):
                 if not entry.is_dir() or not os.path.ismount(entry.path):
