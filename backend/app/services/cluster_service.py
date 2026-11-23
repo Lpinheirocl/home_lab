@@ -57,7 +57,9 @@ class ClusterService:
     def _disks(host_proc_root: str, host_root: str) -> list[DiskResponse]:
         disks: list[DiskResponse] = []
         seen_mountpoints: set[str] = set()
-        with open(f"{host_proc_root}/mounts", encoding="utf-8") as mounts:
+        # /proc/mounts is namespace-aware and reflects the reader's namespace.
+        # Read PID 1's mount table from the host proc mount instead.
+        with open(f"{host_proc_root}/1/mounts", encoding="utf-8") as mounts:
             partitions = [line.split()[:3] for line in mounts if len(line.split()) >= 3]
         pseudo_filesystems = {
             "autofs",
@@ -73,6 +75,8 @@ class ClusterService:
         for device, raw_mountpoint, filesystem in partitions:
             mountpoint = raw_mountpoint.replace("\\040", " ").replace("\\011", "\t")
             if filesystem in pseudo_filesystems or not device.startswith("/dev/"):
+                continue
+            if mountpoint.startswith("/var/lib/kubelet/"):
                 continue
             if mountpoint in seen_mountpoints:
                 continue
