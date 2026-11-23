@@ -23,10 +23,29 @@ class ClusterService:
     """Consultas somente leitura do cluster e do host que executa a API."""
 
     def list_pods(self) -> list[PodResponse]:
-        core_api, _, _ = build_api_clients()
+        core_api, apps_api, _ = build_api_clients()
+        replica_sets = apps_api.list_replica_set_for_all_namespaces().items
+        deployment_owners = {}
+        for replica_set in replica_sets:
+            owner = next((item for item in replica_set.metadata.owner_references or []
+                          if item.kind == "Deployment"), None)
+            if owner:
+                deployment_owners[(replica_set.metadata.namespace, replica_set.metadata.name)] = owner.name
         result: list[PodResponse] = []
         for pod in core_api.list_pod_for_all_namespaces().items:
             statuses = pod.status.container_statuses or []
+            owner = next((item for item in pod.metadata.owner_references or []
+                          if item.controller), None)
+            deployment_owned = bool(owner and (
+                owner.kind == "Deployment"
+                or (owner.kind == "ReplicaSet" and
+                    (pod.metadata.namespace, owner.name) in deployment_owners)
+            ))
+            reason = pod.status.reason
+            if not reason:
+                reason = next((container.state.waiting.reason
+                               for container in statuses
+                               if container.state and container.state.waiting), None)
             ready = sum(1 for container in statuses if container.ready)
             restarts = sum(
                 container.restart_count or 0 for container in statuses
@@ -41,9 +60,41 @@ class ClusterService:
                     restarts=restarts,
                     node=pod.spec.node_name,
                     created_at=pod.metadata.creation_timestamp,
+                    reason=reason,
+                    restartable=deployment_owned,
                 )
             )
         return sorted(result, key=lambda pod: (pod.namespace, pod.name))
+
+    def pod_logs(self, namespace: str, pod_name: str, tail_lines: int = 200,
+                 container_name: str | None = None) -> str:
+        core_api, _, _ = build_api_clients()
+        pod = core_api.read_namespaced_pod(pod_name, namespace)
+        containers = [item.name for item in pod.spec.containers or []]
+        if container_name and container_name not in containers:
+            raise ValueError("Container não pertence a este Pod")
+        selected = container_name or (containers[0] if containers else None)
+        return core_api.read_namespaced_pod_log(
+            pod_name, namespace, container=selected,
+            tail_lines=max(1, min(tail_lines, 1000)), timestamps=True,
+        )
+
+    def restart_pod_workload(self, namespace: str, pod_name: str) -> str:
+        core_api, apps_api, _ = build_api_clients()
+        pod = core_api.read_namespaced_pod(pod_name, namespace)
+        owner = next((item for item in pod.metadata.owner_references or [] if item.controller), None)
+        if owner is None:
+            raise ValueError("Este Pod não pertence a um Deployment reiniciável")
+        deployment_name = owner.name if owner.kind == "Deployment" else None
+        if owner.kind == "ReplicaSet":
+            replica_set = apps_api.read_namespaced_replica_set(owner.name, namespace)
+            deployment = next((item for item in replica_set.metadata.owner_references or []
+                               if item.kind == "Deployment"), None)
+            deployment_name = deployment.name if deployment else None
+        if not deployment_name:
+            raise ValueError("O Pod não pertence a um Deployment; reinício automático indisponível")
+        self.restart_deployment(namespace, deployment_name)
+        return deployment_name
 
     def list_namespaces(self) -> list[NamespaceResponse]:
         core_api, _, _ = build_api_clients()

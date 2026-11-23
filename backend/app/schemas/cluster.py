@@ -12,6 +12,8 @@ class PodResponse(BaseModel):
     restarts: int
     node: str | None = None
     created_at: datetime | None = None
+    reason: str | None = None
+    restartable: bool = False
 
 
 class DiskResponse(BaseModel):

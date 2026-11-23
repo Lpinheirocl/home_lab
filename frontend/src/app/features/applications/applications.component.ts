@@ -80,7 +80,7 @@ export class ApplicationsComponent {
     this.operationMessage.set(null);
     this.api.logs(application.id).subscribe({
       next: (result) => this.selectedLogs.set(result),
-      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível carregar os logs.'),
+      error: (response: {error?: unknown; status?: number}) => this.operationMessage.set(this.errorMessage(response, 'Não foi possível carregar os logs.')),
     });
   }
 
@@ -88,7 +88,7 @@ export class ApplicationsComponent {
     if (!confirm(`Solicitar reinício de ${application.display_name}?`)) return;
     this.api.restart(application.id).subscribe({
       next: (result) => this.operationMessage.set(result.message),
-      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível reiniciar a aplicação.'),
+      error: (response: {error?: unknown; status?: number}) => this.operationMessage.set(this.errorMessage(response, 'Não foi possível reiniciar a aplicação.')),
     });
   }
 
@@ -102,7 +102,15 @@ export class ApplicationsComponent {
     }
     this.api.scale(application.id, replicas).subscribe({
       next: (result) => this.operationMessage.set(result.message),
-      error: (response: {error?: {detail?: string}}) => this.operationMessage.set(response.error?.detail ?? 'Não foi possível escalar a aplicação.'),
+      error: (response: {error?: unknown; status?: number}) => this.operationMessage.set(this.errorMessage(response, 'Não foi possível escalar a aplicação.')),
     });
+  }
+
+  private errorMessage(error: {error?: unknown; status?: number}, fallback: string): string {
+    if (typeof error.error === 'string') return error.error;
+    if (error.error && typeof error.error === 'object' && 'detail' in error.error && typeof error.error.detail === 'string') {
+      return error.error.detail;
+    }
+    return error.status ? `${fallback} (HTTP ${error.status}).` : `${fallback} Verifique se o backend está atualizado e acessível.`;
   }
 }

@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { catchError, combineLatest, map, of, shareReplay, startWith, switchMap, timer } from 'rxjs';
 import { Application } from '../../core/models/application.model';
 import { ApplicationsApiService } from '../../core/services/applications-api.service';
-import { DashboardApiService } from '../../core/services/dashboard-api.service';
+import { DashboardApiService, DashboardData } from '../../core/services/dashboard-api.service';
 import { webSocket } from 'rxjs/webSocket';
 
 @Component({
@@ -41,8 +41,15 @@ export class DashboardComponent {
   );
 
   readonly dashboard$ = timer(0, 60000).pipe(
-    switchMap(() => this.dashboardApi.getDashboard().pipe(catchError(() => of(null)))),
-    startWith(null),
+    switchMap(() => this.dashboardApi.getDashboard().pipe(
+      map((data): {data: DashboardData | null; error: string | null; loading: boolean} => ({data, error: null, loading: false})),
+      catchError((error) => of({
+        data: null,
+        error: error?.error?.detail ?? 'Não foi possível consultar o cluster. Verifique os logs da API.',
+        loading: false,
+      })),
+    )),
+    startWith({data: null, error: null, loading: true}),
     shareReplay({bufferSize: 1, refCount: true}),
   );
 

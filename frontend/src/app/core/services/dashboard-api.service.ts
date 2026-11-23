@@ -26,6 +26,12 @@ export class DashboardApiService {
   }
 
   getPods(): Observable<Pod[]> { return this.http.get<Pod[]>(`${this.apiUrl}/pods`); }
+  getPodLogs(namespace: string, pod: string): Observable<{pod: string; logs: string}> {
+    return this.http.get<{pod: string; logs: string}>(`${this.apiUrl}/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(pod)}/logs`);
+  }
+  restartPod(namespace: string, pod: string): Observable<{status: string; message: string}> {
+    return this.http.post<{status: string; message: string}>(`${this.apiUrl}/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(pod)}/restart`, {});
+  }
   getTelemetry(): Observable<Telemetry> { return this.http.get<Telemetry>(`${this.apiUrl}/telemetry`); }
   getDashboard(): Observable<DashboardData> { return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`); }
   getMetricsHistory(): Observable<{available: boolean; cpu_history: {timestamp: string; value: number}[]; memory_history: {timestamp: string; value: number}[]}> {

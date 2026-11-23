@@ -3,6 +3,19 @@
   <h2>Pods</h2>
   <p class="muted">Todos os Pods encontrados no cluster e seu estado atual.</p>
 
+  <aside class="legend card" aria-label="Legenda dos estados dos Pods">
+    <h3>Legenda de estados</h3>
+    <p><strong class="state-running">Running</strong> — Pod em execução; confira containers prontos para confirmar disponibilidade.</p>
+    <p><strong class="state-pending">Pending</strong> — aguardando agendamento, imagem ou recursos.</p>
+    <p><strong class="state-succeeded">Succeeded</strong> — terminou com sucesso, comum em Jobs.</p>
+    <p><strong class="state-failed">Failed</strong> — terminou com erro; consulte o motivo e os logs.</p>
+    <p><strong class="state-unknown">Unknown</strong> — o cluster não conseguiu determinar o estado.</p>
+    <p class="muted">Reiniciar atua no Deployment controlador do Pod. Pods de Jobs e outros controladores não podem ser reiniciados por esta ação.</p>
+  </aside>
+
+  @if (message()) { <p class="message">{{ message() }}</p> }
+  @if (selectedLogs(); as result) { <section class="card logs"><header><h3>Logs · {{ result.pod }}</h3><button type="button" (click)="selectedLogs.set(null)">Fechar</button></header><pre>{{ result.logs }}</pre></section> }
+
   @if (pods$ | async; as pods) {
     @if (pods.length === 0) {
       <p class="card muted">Nenhum Pod encontrado.</p>
@@ -15,8 +28,10 @@
               <p>{{ pod.namespace }} · {{ pod.node || 'nó não informado' }}</p>
             </div>
             <div class="pod-status">
-              <strong [class.ready]="pod.status === 'Running'">{{ pod.status }}</strong>
+              <strong class="state" [class.state-running]="pod.status === 'Running'" [class.state-pending]="pod.status === 'Pending'" [class.state-succeeded]="pod.status === 'Succeeded'" [class.state-failed]="pod.status === 'Failed'" [class.state-unknown]="pod.status === 'Unknown'">{{ pod.status }}</strong>
+              @if (pod.reason) { <span class="reason">{{ pod.reason }}</span> }
               <span>{{ pod.ready }}/{{ pod.total }} containers prontos · {{ pod.restarts }} reinícios</span>
+              <div class="actions"><button type="button" (click)="loadLogs(pod)">Logs</button><button type="button" (click)="restart(pod)" [disabled]="!pod.restartable">Reiniciar</button></div>
             </div>
           </article>
         }
