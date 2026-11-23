@@ -1,0 +1,75 @@
+name: Tag merged pull request
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main, master]
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: create-version-tag
+  queue: max
+
+jobs:
+  tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BUMP: ${{ (contains(github.event.pull_request.labels.*.name, 'major') || contains(github.event.pull_request.labels.*.name, 'semver:major')) && 'major' || (contains(github.event.pull_request.labels.*.name, 'minor') || contains(github.event.pull_request.labels.*.name, 'semver:minor')) && 'minor' || 'patch' }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout trusted base repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create and push the next version tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags origin
+          git fetch origin "$BASE_REF"
+          git cat-file -e "$MERGE_SHA^{commit}"
+
+          latest_tag=""
+          while IFS= read -r candidate; do
+            if [[ "$candidate" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+              latest_tag="$candidate"
+              break
+            fi
+          done < <(git tag --list 'v*' --sort=-version:refname)
+
+          if [[ -z "$latest_tag" ]]; then
+            case "$BUMP" in
+              major) version="v1.0.0" ;;
+              minor) version="v0.2.0" ;;
+              *) version="v0.1.0" ;;
+            esac
+          else
+            [[ "$latest_tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            patch="${BASH_REMATCH[3]}"
+            case "$BUMP" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              *) patch=$((patch + 1)) ;;
+            esac
+            version="v${major}.${minor}.${patch}"
+          fi
+
+          git tag -a "$version" "$MERGE_SHA" -m "Release $version (PR #$PR_NUMBER)"
+          git push origin "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Created $version for merged PR #$PR_NUMBER at $MERGE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build and publish versioned ARM64 images
+        run: gh workflow run container-images.yml --ref "${{ steps.version.outputs.version }}" -f deploy=false -f version="${{ steps.version.outputs.version }}"
