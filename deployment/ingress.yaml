@@ -16,6 +16,13 @@ spec:
                 name: backend
                 port:
                   name: http
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  name: http
           - path: /
             pathType: Prefix
             backend:

@@ -3,6 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class ResourceReference(BaseModel):
+    resource_type: str = Field(min_length=1, max_length=40)
+    resource_name: str = Field(min_length=1, max_length=253)
+    namespace: str = Field(min_length=1, max_length=120)
+
+
 class ApplicationBase(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     display_name: str = Field(min_length=1, max_length=120)
@@ -17,6 +23,7 @@ class ApplicationBase(BaseModel):
 
 class ApplicationCreate(ApplicationBase):
     discovery_source: str = Field(default="manual", max_length=40)
+    resources: list[ResourceReference] = Field(default_factory=list, max_length=50)
 
 
 class ApplicationUpdate(BaseModel):

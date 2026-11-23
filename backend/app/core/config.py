@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     public_http_port: int = 32618
     host_proc_root: str = "/host/proc"
     host_root: str = "/host/root"
+    prometheus_url: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="HSM_", extra="ignore")
 

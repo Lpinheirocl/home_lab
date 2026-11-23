@@ -12,5 +12,8 @@ export interface Telemetry {
   memory_used_bytes: number;
   memory_total_bytes: number;
   disks: DiskTelemetry[];
+  network_received_bytes: number;
+  network_transmitted_bytes: number;
+  temperature_celsius: number | null;
 }
 
