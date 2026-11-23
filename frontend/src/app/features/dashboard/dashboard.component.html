@@ -3,8 +3,8 @@
   <h2>Dashboard</h2>
   <p class="muted">Status do cluster, aplicações e recursos do servidor.</p>
 
-  @if (dashboard$ | async; as dashboard) {
-    @if (dashboard) {
+  @if (dashboard$ | async; as state) {
+    @if (state.data; as dashboard) {
       <div class="cards">
         <article><span>Cluster K3s</span><strong>{{ dashboard.cluster_connected ? 'Conectado' : 'Indisponível' }}</strong></article>
         <article><span>Aplicações online</span><strong>{{ dashboard.applications_online }}/{{ dashboard.applications_total }}</strong></article>
@@ -28,8 +28,9 @@
         }
         @if (dashboard.recent_events.length === 0) { <p class="muted">Nenhum evento recente.</p> }
       </div>
-    } @else { <p class="muted">Não foi possível consultar o cluster.</p> }
-  } @else { <p class="muted">Carregando estado do cluster...</p> }
+    } @else if (state.error) { <p class="error">{{ state.error }}</p> }
+    @else if (state.loading) { <p class="muted">Carregando estado do cluster...</p> }
+  }
 
   <div class="telemetry" aria-label="Telemetria da máquina">
     <h3>Telemetria do servidor</h3>

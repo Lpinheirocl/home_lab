@@ -81,6 +81,31 @@ async def list_pods() -> list[PodResponse]:
     except (RuntimeError, ApiException) as error:
         raise _cluster_error(error) from error
 
+
+@router.get("/pods/{namespace}/{pod_name}/logs")
+async def pod_logs(
+    namespace: str,
+    pod_name: str,
+    tail_lines: int = Query(default=200, ge=1, le=1000),
+) -> dict[str, str]:
+    try:
+        return {"pod": pod_name, "logs": ClusterService().pod_logs(namespace, pod_name, tail_lines)}
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except (RuntimeError, ApiException) as error:
+        raise _cluster_error(error) from error
+
+
+@router.post("/pods/{namespace}/{pod_name}/restart", status_code=status.HTTP_202_ACCEPTED)
+async def restart_pod(namespace: str, pod_name: str) -> dict[str, str]:
+    try:
+        deployment = ClusterService().restart_pod_workload(namespace, pod_name)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except (RuntimeError, ApiException) as error:
+        raise _cluster_error(error) from error
+    return {"status": "accepted", "message": f"Reinício do Deployment {deployment} solicitado"}
+
 @router.get(
     "/telemetry",
     response_model=TelemetryResponse,

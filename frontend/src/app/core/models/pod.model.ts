@@ -7,5 +7,7 @@ export interface Pod {
   restarts: number;
   node: string | null;
   created_at: string | null;
+  reason: string | null;
+  restartable: boolean;
 }
 

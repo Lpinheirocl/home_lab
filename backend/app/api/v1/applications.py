@@ -54,7 +54,34 @@ async def _get_deployment_application(
     ).limit(1))
     deployment = result.scalar_one_or_none()
     if deployment is None:
-        raise HTTPException(status_code=409, detail="Aplicação sem Deployment Kubernetes associado")
+        if not application.namespace:
+            raise HTTPException(status_code=409, detail="Aplicação sem Deployment Kubernetes associado")
+        try:
+            discovered = DiscoveryService().discover()
+        except (RuntimeError, ApiException) as error:
+            code = error.status if isinstance(error, ApiException) and error.status else 503
+            raise HTTPException(status_code=code, detail=str(error)) from error
+        candidate = next((item for item in discovered
+                          if item.namespace == application.namespace and item.name == application.name), None)
+        if candidate is None:
+            raise HTTPException(
+                status_code=409,
+                detail="Nenhum Deployment com este nome foi encontrado no namespace cadastrado",
+            )
+        deployment = KubernetesResource(
+            application_id=application.id,
+            resource_type="Deployment",
+            resource_name=candidate.deployment_name,
+            namespace=candidate.namespace,
+        )
+        db.add(deployment)
+        db.add_all([KubernetesResource(
+            application_id=application.id,
+            resource_type="Service",
+            resource_name=service_name,
+            namespace=candidate.namespace,
+        ) for service_name in candidate.services])
+        await db.commit()
     return application, deployment
 
 
